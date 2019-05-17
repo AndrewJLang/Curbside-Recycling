@@ -25,5 +25,6 @@ def convertAudio(fileLocation, folderName):
         os.system("ffmpeg -i sample_images/" + folderName + "/" + x + " -f mp3 -vn sample_images/" + folderName + "/audio_clips/audio_clip_" + str(count) + ".mp3 -hide_banner")
         count += 1
 
+# Need to be changed accordingly to proper directory
 # convertVideos("./sample_images/tennis_balls", "tennis_balls")
-convertAudio("./sample_images/tennis_balls", "tennis_balls")
+# convertAudio("./sample_images/tennis_balls", "tennis_balls")
