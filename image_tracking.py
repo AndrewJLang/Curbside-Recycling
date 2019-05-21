@@ -29,8 +29,8 @@ def createTracker(trackerType):
 videoTypes = ['cardboard', 'paper', 'plastic_bags', 'plastic_bottles', 'soda_cans', 'tennis_balls', 'mixed']
 
 #select video type from videoTypes array
-videoType = videoTypes[5]
-videoPath = "sample_images/" + videoType + "/IMG_4131.MOV"
+videoType = videoTypes[4]
+videoPath = "sample_images/" + videoType + "/IMG_4150.MOV"
 
 capture = cv2.VideoCapture(videoPath)
 
@@ -54,7 +54,7 @@ downsizedFrame = rescale_frame(frame, percent=65)
 # downsizedFrame = cv2.flip(downsizedFrame, -1)
 boxes, colors = [], []
 count = 0
-while count < 4: #will be necessary for identifying multiple objects (need to change to loop for as many 'objects' wanting to identify)
+while count < 1: #will be necessary for identifying multiple objects (need to change to loop for as many 'objects' wanting to identify)
     count += 1
     box = cv2.selectROI('MultiTracker', downsizedFrame)
     boxes.append(box)
@@ -88,3 +88,6 @@ while capture.isOpened():
 
     if cv2.waitKey(1) & 0xFF == 27:
         break
+
+# downsizedFrame.release()
+# cv2.destroyAllWindows()
