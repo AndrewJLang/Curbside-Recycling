@@ -18,4 +18,13 @@ def convertVideos(fileLocation, folderName):
         os.system("ffmpeg -i sample_images/" + folderName + "/" + x + " -r 4 sample_images/" + folderName + "/video_" + str(count) + "_frames/image%05d.jpg -hide_banner")
         count += 1
 
-convertVideos("./sample_images/tennis_balls", "tennis_balls")
+def convertAudio(fileLocation, folderName):
+    count = 0
+    createFolder("./sample_images/" + folderName + "/audio_clips")
+    for x in os.listdir("./" + fileLocation + "/"):
+        os.system("ffmpeg -i sample_images/" + folderName + "/" + x + " -f mp3 -vn sample_images/" + folderName + "/audio_clips/audio_clip_" + str(count) + ".mp3 -hide_banner")
+        count += 1
+
+# Need to be changed accordingly to proper directory
+convertVideos("./sample_images/soda_cans", "soda_cans")
+convertAudio("./sample_images/soda_cans", "soda_cans")
