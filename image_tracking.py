@@ -29,7 +29,7 @@ def createTracker(trackerType):
 videoTypes = ['cardboard', 'paper', 'plastic_bags', 'plastic_bottles', 'soda_cans', 'tennis_balls', 'mixed']
 
 #select video type from videoTypes array
-videoType = videoTypes[4]
+videoType = videoTypes[3]
 videoPath = "sample_images/" + videoType + "/IMG_4150.MOV"
 
 capture = cv2.VideoCapture(videoPath)

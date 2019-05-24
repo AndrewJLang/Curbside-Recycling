@@ -26,5 +26,5 @@ def convertAudio(fileLocation, folderName):
         count += 1
 
 # Need to be changed accordingly to proper directory
-# convertVideos("./sample_images/tennis_balls", "tennis_balls")
-# convertAudio("./sample_images/tennis_balls", "tennis_balls")
+convertVideos("./sample_images/soda_cans", "soda_cans")
+convertAudio("./sample_images/soda_cans", "soda_cans")
