@@ -12,13 +12,16 @@ audioFiles = glob(fileDirectoy + "/*.mp3") #array of all audio files
 
 signal_arr, index_arr = [], []
 
-#Use for cutting out where there is no noise from audio clips
-def trimAudioFiles(audioArray):
+#Use for cutting out where there is no noise from audio clips, writeOuput determines if output will be written to a file and threshold determines what will be considered silence
+def trimAudioFiles(audioArray, writeOutput=False, threshold=35):
     for x in range(len(audioArray)):
         y, sr = lb.load(audioArray[x])
-        yr, index = lb.effects.trim(y, top_db=35)
+        yr, index = lb.effects.trim(y, top_db=threshold)
         signal_arr.append(yr)
         index_arr.append(index)
+        if writeOutput == True:
+                lb.output.write_wav("sample_images/" + folderName + "/trimmed_audio/trimmed_audio_" + str(x) + ".wav", yr, sr=22050)
+        
         print(lb.get_duration(y), lb.get_duration(yr))
 
 def graphAudio(audioArray, signalArray=None):
@@ -35,6 +38,6 @@ def graphAudio(audioArray, signalArray=None):
             lb.display.waveplot(signalArray[x], sr=22050) #need to make this into an integer not an array (indexArray)
     plt.show()
 
-trimAudioFiles(audioFiles)
+trimAudioFiles(audioFiles, writeOutput=False, threshold=35)
 
 graphAudio(audioFiles, signalArray=signal_arr)
