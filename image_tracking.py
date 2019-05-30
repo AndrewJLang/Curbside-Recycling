@@ -2,6 +2,9 @@ import cv2
 import sys, os
 from random import randint
 
+# Implementation to track the image, but user must draw around the object they wish to track
+# Effective for tracking, but unable to detect automatically
+
 trackerTypes = ['BOOSTING', 'MIL', 'KCF','TLD', 'MEDIANFLOW', 'GOTURN', 'MOSSE', 'CSRT']
 
 #takes an integer input to pick which tracking algorithm to use
@@ -30,7 +33,7 @@ videoTypes = ['cardboard', 'paper', 'plastic_bags', 'plastic_bottles', 'soda_can
 
 #select video type from videoTypes array
 videoType = videoTypes[3]
-videoPath = "sample_images/" + videoType + "/IMG_4150.MOV"
+videoPath = "sample_images/" + videoType + "/IMG_4159.MOV"
 
 capture = cv2.VideoCapture(videoPath)
 
