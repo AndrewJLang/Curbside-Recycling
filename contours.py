@@ -3,6 +3,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import imutils
 
+# Not useful, probably will delete file later as object_detection.py does same thing
+
 # img = cv2.imread("sample_images/tennis_balls/video_5_frames/image00004.jpg")
 videoPath = "sample_images/tennis_balls/IMG_4134.MOV"
 

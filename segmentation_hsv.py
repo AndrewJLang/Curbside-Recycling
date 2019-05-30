@@ -1,6 +1,8 @@
 import cv2
 import numpy as np
 
+#Used for converting the images/frames from RGB to HSV (wanted to see the difference and if it would be of any help)
+
 def rescale_frame(frame, percent):
     width = int(frame.shape[1] * percent/ 100)
     height = int(frame.shape[0] * percent/ 100)

@@ -1,6 +1,8 @@
 import cv2
 import numpy as np
 
+#Attempted to implement the blobDetection built into opencv, not continuing work on this atm
+
 def rescale_frame(frame, percent):
     width = int(frame.shape[1] * percent/ 100)
     height = int(frame.shape[0] * percent/ 100)
@@ -21,10 +23,11 @@ def blobDetection(folderName='tennis_balls', videoFrames='5', image='image00004.
     # params.minInertiaRatio = 0.7
 
     img = cv2.imread("sample_images/" + folderName + "/video_" + videoFrames + "_frames/" + image)
-    newImage = rescale_frame(img, percent=45)
+    # img = cv2.imread("blue_background_sample_images/video_" + videoFrames + "_frames/" + image)
+    # newImage = rescale_frame(img, percent=45)
     detector = cv2.SimpleBlobDetector_create(params)
-    keypoint = detector.detect(newImage)
-    keypoints = cv2.drawKeypoints(newImage, keypoint, np.array([]), (0,0,255), cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
+    keypoint = detector.detect(img)
+    keypoints = cv2.drawKeypoints(img, keypoint, np.array([]), (0,0,255), cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
 
     cv2.imshow("Keypoints", keypoints)
     cv2.waitKey(0)

@@ -1,6 +1,8 @@
 import numpy as np
 import os, sys
 
+#This is for extracting the frames from the videos and audio clips, also creates folder for frames to be placed into
+
 #create the file location for where the extracted videos into frames go
 def createFolder(folderName):
     try:

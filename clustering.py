@@ -3,6 +3,7 @@ import numpy as np
 from sklearn.cluster import KMeans
 import matplotlib.pyplot as plt
 
+# Tried clustering similar pixels to pick out the object, not effective atm
 
 # image = cv2.imread('sample_images/plastic_bottles/video_6_frames/image00006.jpg')
 # image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
