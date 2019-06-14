@@ -31,4 +31,4 @@ def convertAudio(fileLocation, folderName):
 
 # Need to be changed accordingly to proper directory
 # convertVideos("./sample_images/soda_cans", "soda_cans")
-convertAudio("./blue_background_sample_images/", "soda_cans")
+# convertAudio("./blue_background_sample_images/", "soda_cans")

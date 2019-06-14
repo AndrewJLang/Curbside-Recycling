@@ -3,13 +3,19 @@ import numpy as np
 import math
 import matplotlib.pyplot as plt
 from skimage.feature import greycomatrix, greycoprops
+import csv
+import os
+
+listOfObjects = ['tennis_balls', 'soda_cans', 'plastic_bottles']
+selectedObject = 2
+
 
 # File that will be the focus point for now
 # Finding the contours of each frame to detect the moving object and hopefully project the objects trajectory
 
-capture = cv2.VideoCapture("blue_background_sample_images/slow_motion/IMG_4212_Slomo.mp4") # tennis ball
-# capture = cv2.VideoCapture("blue_background_sample_images/slow_motion/IMG_4225_Slomo.mp4") #plastic bottle
-# capture = cv2.VideoCapture("blue_background_sample_images/slow_motion/IMG_4223_Slomo.mp4") #soda can
+# capture = cv2.VideoCapture("blue_background_sample_images/slow_motion/" + listOfObjects[selectedObject] +"/IMG_4212_Slomo.mp4") # tennis ball
+capture = cv2.VideoCapture("blue_background_sample_images/slow_motion/" + listOfObjects[selectedObject] +"/IMG_4225_Slomo.mp4") #plastic bottle
+# capture = cv2.VideoCapture("blue_background_sample_images/slow_motion/" + listOfObjects[selectedObject] +"/IMG_4223_Slomo.mp4") #soda can
 
 #Calculates the Euclidean distance between two colors to find the one that is the most similar
 #Returns the position of the color in the array
@@ -35,8 +41,51 @@ def rescale_frame(frame, percent):
     else:
         return None
 
-# def GLCMImage():
+def GLCMImage(GLCMArray, feature=1):
+    selectedFeature = []
+    GLCMFeatures = ['contrast', 'dissimilarity', 'homogeneity', 'energy', 'correlation', 'ASM']
+    arr = np.array([[0,0,1,1], [0,1,1,1]], dtype=np.uint8)
+    # print(len(GLCMArray[0]))
+    for x, patch in enumerate(GLCMArray):
+        print(x)
+        glcm = greycomatrix(patch, [5], [0], 10000, symmetric=True, normed=True) #Need to bin image later for optimization
+        selectedFeature.append(greycoprops(glcm, prop='contrast')[0,0])
+        print(selectedFeature[x])
+    return selectedFeature  
 
+def CLAHEImage(image):
+    clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
+    # claheImg = clahe.apply(image.asType(np.uint8))
+    # cv2.imshow("Normal Image", image)
+    # cv2.imshow("Clahe image", claheImg)
+
+
+#Writes the ground truths and the feature vectors to different files to run through the ANN
+def writeCSV(fileName, colorArr, testObject=1, fileType='a'):
+    with open("Neural Network/CSV Files/" + fileName, fileType, newline='') as f:
+        fileWriter = csv.writer(f)
+        for x in range(len(colorArr)):
+            fileWriter.writerow(colorArr[x])
+    f.close()
+    with open("Neural Network/CSV Files/GroundTruths.csv", fileType, newline='') as gt:
+        fileWriter = csv.writer(gt)
+        for x in range(len(colorArr)):
+            gt.write(str(testObject))
+            gt.write("\n")
+    gt.close()
+
+
+#Create arrays to store all similar videos so they can be processed at the same time
+tennisBallVideos, plasticBottleVideos, sodaCanVideos = [], [], []
+
+#Get all the videos that are in slo-mo so we can extract all the features at once
+def getAllVideos(folderName, videoArray):
+    for x in os.listdir("./blue_background_sample_images/slow_motion/" + folderName + "/"):
+        videoArray.append(x)
+    return videoArray
+
+getAllVideos("tennis_balls", tennisBallVideos)
+print(len(tennisBallVideos))
 
 if capture.isOpened():
     success, frame = capture.read()
@@ -47,12 +96,17 @@ else:
 success, frame1 = capture.read()
 success, frame2 = capture.read()
 
+# convertImg = cv2.cvtColor(frame1, cv2.COLOR_BGR2LAB)
+# CLAHEImage(frame1)
+
 trajectory = []
 lastColor, listOfColors, position = [], [], -1
+GLCMArr = []
 
 while success:
     contourColors = []
     success, frame = capture.read()
+    regionArr = []
     
     if frame2 is not None:
         diff = cv2.absdiff(frame1, frame2)
@@ -76,12 +130,10 @@ while success:
             trimmed_contours.append(contour)
             trimmed_contours_area.append(cv2.contourArea(contour))
 
-    boxArr = []
     for contour in trimmed_contours:
         rect = cv2.minAreaRect(contour)
         box = cv2.boxPoints(rect)
         box = np.int0(box)
-        boxArr.append(box)
 
         #need to get the region of the box to extract color from
         maxX, maxY = 0,0
@@ -96,11 +148,8 @@ while success:
             if box[x][1] < minY:
                 minY = box[x][1]
         region = frame1[minY:maxY, minX:maxX]
+        regionArr.append(region)
         b,g,r = np.mean(region, axis=(0,1))
-        # if b > g and b > r:
-        #     trimmed_contours.remove(contour)
-        #     continue
-        # print("Red: " + str(r) + "\tGreen: " + str(g) + "\tBlue: " + str(b/2))
         
         contourColors.append((r,g,b/2))
 
@@ -117,10 +166,9 @@ while success:
         listOfColors.append(lastColor)
 
 
-
     cv2.drawContours(frame1, trimmed_contours, -1, (0,255,0), 2)
 
-    glcm_box = []
+
     count = 0
     for contour in trimmed_contours:
         M = cv2.moments(contour)
@@ -130,12 +178,10 @@ while success:
             cY = int(M["m01"]/M["m00"])
         
         cv2.circle(frame1, (cX, cY), 7, (255,255,255), -1)
-
-        if count == position: #going in this code block multiple times sometimes
-            glcm_box.append(box[position])
+        if count == position:
+            GLCMArr.append(regionArr[position])
             trajectory.append((cX, cY))
         count += 1
-    print("GLCM: " + str(len(glcm_box)))
     frame1 = rescale_frame(frame1, percent=35)
     if frame1 is not None:
         cv2.imshow("inter", frame1)
@@ -147,13 +193,24 @@ while success:
 
     frame1 = frame2
     ret, frame2 = capture.read()
+    
+# print(listOfColors) #Need to figure out how to delete 'nan' elements from the array
 
-print(trajectory)
+
 #print a graph of the centroids associated with the object
-for x in range(len(trajectory)):
-    plt.scatter(trajectory[x][0], trajectory[x][1])
-plt.xlim(0,2000)
-plt.ylim(0,2000)
+def graphTrajectory(traject):
+    for x in range(len(traject)):
+        plt.scatter(traject[x][0], traject[x][1])
+    plt.xlim(0,2000)
+    plt.ylim(0,2000)
+
+
+
+
+
+# graphTrajectory(trajectory)
+# writeCSV("Dataset.csv", listOfColors, testObject=selectedObject)
+
 plt.show()
 
 cv2.destroyAllWindows()
