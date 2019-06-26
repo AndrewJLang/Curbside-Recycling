@@ -73,9 +73,12 @@ model.add(Dense(4, activation='softmax'))
 
 Stochastic = optimizers.SGD(lr=0.1)
 
-model.compile(optimizer=optimizers.Adam(lr=0.001), loss=losses.categorical_crossentropy, metrics=['accuracy'])
+#learning rate at 0.1 does not perform well (gets stuck in local minimum)
+learningRate = 0.01
 
-modelFit = model.fit(dataset, labels, epochs=500, batch_size=500, verbose=2, validation_split=0.2)
+model.compile(optimizer=optimizers.Adam(lr=learningRate), loss=losses.categorical_crossentropy, metrics=['accuracy'])
+
+modelFit = model.fit(dataset, labels, epochs=1000, batch_size=744, verbose=2, validation_split=0.2)
 
 # score = model.evaluate(validationData, validationLabels, batch_size=15)
 
@@ -83,14 +86,14 @@ model.summary()
 
 # print("\n%s: %.2f%%" % (model.metrics_names[1], score[1]*100))
 
-def writeCSV(model,outputLayers, layerCount, epochs, batchSize, opt="Adam", activation="relu"):
+def writeCSV(model,outputLayers, layerCount, epochs, batchSize, opt="Adam", activation="relu", learningRate=0.01):
         TrainingAcc = model.history['acc']
         trainingLoss =  model.history['loss']
         ValidationAcc = model.history['val_acc']
         validationLoss = model.history['val_loss']
         with open("CSV Files/ANNResults.csv", mode='a', newline='') as f:
                 fileWriter = csv.writer(f)
-                f.write("Epochs: " + str(epochs) + "     BatchSize: " + str(batchSize))
+                f.write("Epochs: " + str(epochs) + "     BatchSize: " + str(batchSize) + "     Learning Rate: " + str(learningRate))
                 f.write("\nOptimizer: " + opt + "     Activation: " + activation)
                 f.write("\nTraining Acc: " + str(TrainingAcc[-1]) + "     Validation Acc: " + str(ValidationAcc[-1]))
                 f.write("\nTraining Loss: " + str(trainingLoss[-1]) + "     Validation Loss: " + str(validationLoss[-1]))
@@ -98,7 +101,7 @@ def writeCSV(model,outputLayers, layerCount, epochs, batchSize, opt="Adam", acti
 
 writeOutput = args["writeOutput"]
 if int(writeOutput) == 1:
-        writeCSV(modelFit, outputLayer, layerCount, epochs=500, batchSize=20)
+        writeCSV(modelFit, outputLayer, layerCount, epochs=1000, batchSize=744, learningRate=0.01)
 
 #graph's both the training and validation data to see performance
 def model_data(model):
