@@ -8,10 +8,10 @@ import os
 #Cropping and trimming the audio files that are extracted from the videos
 
 #Can be changed according to which folder of audio clips you want to extract from
-folderName = "plastic_bottles"
+folderName = "tennis_balls"
 
 # fileDirectory = "../sample_images/" + folderName + "/audio_clips"
-fileDirectory = "../blue_background_sample_images/slow_motion/" + folderName + "/audio_clips"
+fileDirectory = "../blue_background_sample_images/regular_speed/" + folderName + "/audio_clips"
 
 audioFiles = glob(fileDirectory + "/*.mp3") #array of all audio files
 print(audioFiles)
@@ -30,11 +30,11 @@ def trimAudioFiles(audioArray, writeOutput=False, threshold=35, background=None,
         if writeOutput == True and background == "Blue":
                 if x == 0:
                         try:
-                                os.makedirs("../blue_background_sample_images/trimmed_Slomo_audio/" + folderName)
+                                os.makedirs("../blue_background_sample_images/regular_trimmed_audio/" + folderName)
                         except OSError:
                                 print("File path already exists, program terminated")
                                 break
-                lb.output.write_wav("../blue_background_sample_images/trimmed_Slomo_audio/" + folderName + "/trimmed_audio_" + str(x) + ".wav", yr, sr=22050)
+                lb.output.write_wav("../blue_background_sample_images/regular_trimmed_audio/" + folderName + "/trimmed_audio_" + str(x) + ".wav", yr, sr=22050)
         print(lb.get_duration(y), lb.get_duration(yr))
 
 #Graph the audio files so you can see how/where they were trimmed
@@ -53,6 +53,6 @@ def graphAudio(audioArray, signalArray=None):
 
 trimAudioFiles(audioFiles, writeOutput=True, threshold=35, background="Blue")
 
-graphAudio(audioFiles)
-graphAudio(audioFiles,signalArray=signal_arr)
+# graphAudio(audioFiles)
+# graphAudio(audioFiles,signalArray=signal_arr)
 plt.show()

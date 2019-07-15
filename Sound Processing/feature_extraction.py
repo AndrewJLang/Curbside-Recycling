@@ -7,7 +7,7 @@ from numpy.linalg import norm
 from scipy.spatial.distance import euclidean
 import numpy as np
 
-THRESHOLD = 70 #for differentiating whether the two audio clips are the same or not
+THRESHOLD = 50 #for differentiating whether the two audio clips are the same or not (>70 = not the same, 70> = same object)
 signal_arr, index_arr = [], []
 
 #method for extracting every mfcc from the directory of audio clips
@@ -18,6 +18,7 @@ def extractMFCC(audioArr):
         MFCC.append(lb.feature.mfcc(y=y, sr=sr))
     return MFCC
 
+#extracting all the chromagrams of the audio clips (my understanding is that this is not very useful)
 def extractChroma(audioArr):
     chroma = []
     for x in range(len(audioArr)):
@@ -25,12 +26,20 @@ def extractChroma(audioArr):
         chroma.append(lb.feature.chroma_stft(y=y, sr=sr))
     return chroma
 
-def extractSepectrogram(audioArr):
+#extracting all the spectrograms of the audio clips (Not sure how effective this methodoloy/feature vector is)
+def extractSpectrogram(audioArr):
     spect = []
     for x in range(len(audioArr)):
         y, sr = lb.load(audioArr[x])
         spect.append(lb.feature.melspectrogram(y=y, sr=sr))
     return spect
+
+def extractSpectralFlatness(audioArr):
+    spectral = []
+    for x in range(len(audioArr)):
+        y, sr = lb.load(audioArr[x])
+        spectral.append(lb.feature.spectral_flatness(y=y))
+
 
 def MFCCSoundSimilarity(audioArr1, arr1Name, audioArr2, arr2Name, sameArr=False):
     categorizationCount, totalCount = 0, 0
@@ -45,7 +54,7 @@ def MFCCSoundSimilarity(audioArr1, arr1Name, audioArr2, arr2Name, sameArr=False)
             elif dist > THRESHOLD and sameArr is False: #measures how often it is classified as different object when different objects
                 categorizationCount += 1
             soundComparison.append(dist)
-            print(f"The normalized distance between two audio clips: {dist}")
+            # print(f"The normalized distance between two audio clips: {dist}")
     if sameArr is True:
         categorizationCount -= len(audioArr1) #need to get rid of elements that are compared against themselves (will give 0 for distance)
         totalCount -= len(audioArr1)
@@ -56,7 +65,6 @@ def MFCCSoundSimilarity(audioArr1, arr1Name, audioArr2, arr2Name, sameArr=False)
     # print(f"Average Classification Accuracy: {arr1Name} vs. {arr2Name}= {average}")
     return soundComparison, average
 
-
 fileDirectoryPlasticBottles = "../blue_background_sample_images/trimmed_Slomo_audio/plastic_bottles"
 audioFilesPlasticBottles = glob(fileDirectoryPlasticBottles + "/*.wav")
 
@@ -66,21 +74,26 @@ audioFilesSodaCans = glob(fileDirectorySodaCans + "/*.wav")
 fileDirectoryTennisBalls = "../blue_background_sample_images/trimmed_Slomo_audio/tennis_balls"
 audioFilesTennisBalls = glob(fileDirectoryTennisBalls + "/*.wav")
 
-
-soda_cans = extractSepectrogram(audioFilesSodaCans)
-plastic_bottles = extractSepectrogram(audioFilesPlasticBottles)
-tennis_balls = extractSepectrogram(audioFilesTennisBalls)
-
-test1, soda_can_vs_tennis_ball_avg = MFCCSoundSimilarity(soda_cans, "soda cans", tennis_balls, "tennis balls", sameArr=False)
-_, soda_can_avg = MFCCSoundSimilarity(soda_cans, "soda cans", soda_cans, "soda cans", sameArr=True)
-_, tennis_ball_avg = MFCCSoundSimilarity(tennis_balls, "tennis balls", tennis_balls, "tennis balls", sameArr=True)
-_, plastic_bottles_avg = MFCCSoundSimilarity(plastic_bottles, "plastic bottles", plastic_bottles, "plastic bottles", sameArr=True)
-_, plastic_bottles_vs_tennis_balls_avg = MFCCSoundSimilarity(plastic_bottles, "plastic bottles", tennis_balls, "tennis balls", sameArr=False)
-_, soda_can_vs_plastic_bottles_avg = MFCCSoundSimilarity(plastic_bottles, "plastic bottles", soda_cans, "soda cans", sameArr=False)
-
-print(f"plastic bottles: {plastic_bottles_avg}\nsoda cans: {soda_can_avg}\ntennis balls: {tennis_ball_avg}\n"
-    f"plastic bottles vs. tennis balls: {plastic_bottles_vs_tennis_balls_avg}\nplastic bottles vs. soda cans: {soda_can_vs_plastic_bottles_avg}\n"
-    f"soda cans vs. tennis balls: {soda_can_vs_tennis_ball_avg}\n")
+y, sr = lb.load(audioFilesPlasticBottles[0])
+arr = lb.feature.melspectrogram(y=y, sr=sr)
+print(np.array(arr).shape)
 
 
-plt.show()
+soda_cans = extractMFCC(audioFilesSodaCans)
+print(np.array(soda_cans))
+# plastic_bottles = extractMFCC(audioFilesPlasticBottles)
+# tennis_balls = extractMFCC(audioFilesTennisBalls)
+
+# test1, soda_can_vs_tennis_ball_avg = MFCCSoundSimilarity(soda_cans, "soda cans", tennis_balls, "tennis balls", sameArr=False)
+# _, soda_can_avg = MFCCSoundSimilarity(soda_cans, "soda cans", soda_cans, "soda cans", sameArr=True)
+# _, tennis_ball_avg = MFCCSoundSimilarity(tennis_balls, "tennis balls", tennis_balls, "tennis balls", sameArr=True)
+# _, plastic_bottles_avg = MFCCSoundSimilarity(plastic_bottles, "plastic bottles", plastic_bottles, "plastic bottles", sameArr=True)
+# _, plastic_bottles_vs_tennis_balls_avg = MFCCSoundSimilarity(plastic_bottles, "plastic bottles", tennis_balls, "tennis balls", sameArr=False)
+# _, soda_can_vs_plastic_bottles_avg = MFCCSoundSimilarity(plastic_bottles, "plastic bottles", soda_cans, "soda cans", sameArr=False)
+print(f"Threshold: {THRESHOLD}")
+# print(f"plastic bottles: {plastic_bottles_avg}\nsoda cans: {soda_can_avg}\ntennis balls: {tennis_ball_avg}\n"
+    # f"plastic bottles vs. tennis balls: {plastic_bottles_vs_tennis_balls_avg}\nplastic bottles vs. soda cans: {soda_can_vs_plastic_bottles_avg}\n"
+    # f"soda cans vs. tennis balls: {soda_can_vs_tennis_ball_avg}\n")
+# print(test1)
+
+# plt.show()
