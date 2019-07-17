@@ -71,7 +71,7 @@ for x in range(int(layerCount)):
 
 model.add(Dense(4, activation='softmax'))
 
-Stochastic = optimizers.SGD(lr=0.1)
+# Stochastic = optimizers.SGD(lr=0.1)
 
 #learning rate at 0.1 does not perform well (gets stuck in local minimum)
 learningRate = 0.01
