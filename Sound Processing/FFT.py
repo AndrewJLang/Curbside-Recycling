@@ -5,6 +5,8 @@ from glob import glob
 import matplotlib.pyplot as plt
 from scipy import spatial, signal, interpolate
 
+sameObject = False
+
 fileDirectoryPlasticBottles = "../blue_background_sample_images/regular_trimmed_audio/plastic_bottles"
 audioFilesPlasticBottles = glob(fileDirectoryPlasticBottles + "/*.wav")
 
@@ -67,6 +69,21 @@ def windowSliding(audioClip1, audioClip2):
         return resultWelch
     return similarityArr
 
+def sameObject(audioArr1):
+    maxSimilarity = []
+    for x in range(len(audioArr1)):
+        for i in range(len(audioArr1)):
+            arr = []
+            if x != i and x < i:
+                try:
+                    arr = windowSliding(audioArr1[x], audioArr1[i])
+                    arr = np.array(arr)
+                    maxSimilarity.append(max(arr))
+                except TypeError:
+                    maxSimilarity.append(arr)
+                    continue
+    return maxSimilarity
+
 
 def allVideoSliding(audioArr1, audioArr2):
     maxSimilarity = []
@@ -88,11 +105,16 @@ def allVideoSliding(audioArr1, audioArr2):
 
 
 
-audioClips1 = extractAllFFT(audioFilesPlasticBottles)
+audioClips1 = extractAllFFT(audioFilesTennisBalls)
 audioClips2 = extractAllFFT(audioFilesTennisBalls)
 
+print(np.array(audioClips1).shape)
+print(np.array(audioClips2).shape)
 
-cosineOutput = np.array(allVideoSliding(audioClips1, audioClips2))
+
+# cosineOutput = np.array(allVideoSliding(audioClips1, audioClips2)) #Use this when audioClips1 and audioClips2 are from different files
+
+cosineOutput = np.array(sameObject(audioClips1)) #Use this is audioClips1 and audioClips2 are extracting from the same file
 
 print(cosineOutput.shape)
 for x in range(len(cosineOutput)):
@@ -105,4 +127,4 @@ def writeCSV(dataset1, dataset2):
             f.write(f"{cosineOutput[x]}\n")
         f.write("\n")
 
-# writeCSV("Plastic Bottles", "Tennis Balls")
+writeCSV("Tennis Balls", "Tennis Balls")
