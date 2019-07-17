@@ -30,49 +30,79 @@ def extractAllFFT(audioArr):
 
 def longestAudio(dist1, dist2):
     if len(dist1) > len(dist2):
-        dist1 = dist1[:len(dist2)]
+        return 1
+    elif len(dist1) < len(dist2):
+        return 0
     else:
-        dist2 = dist2[:len(dist1)]
-    return dist1, dist2
+        return -1
+
+
+def windowSliding(audioClip1, audioClip2):
+    similarityArr = []
+    if longestAudio(audioClip1, audioClip2) == 1:
+        _, welch2 = signal.welch(audioClip2, return_onesided=False)
+        for x in range(0, len(audioClip1), 100):
+            try:
+                subClip = audioClip1[x:(len(audioClip2)+x)]
+                _, welch1 = signal.welch(subClip, return_onesided=False)
+                resultWelch = 1 - spatial.distance.cosine(welch1, welch2)
+                similarityArr.append(resultWelch)
+            except (IndexError, ValueError) as e:
+                return similarityArr
+    elif longestAudio(audioClip1, audioClip2) == 0:
+        _, welch1 = signal.welch(audioClip1, return_onesided=False)
+        for x in range(0, len(audioClip2), 100):
+            try:
+                subClip = audioClip2[x:(len(audioClip1)+x)]
+                _, welch2 = signal.welch(subClip, return_onesided=False)
+                resultWelch = 1 - spatial.distance.cosine(welch1, welch2)
+                similarityArr.append(resultWelch)
+            except (IndexError, ValueError) as e:
+                print("Index Error or ValueError: sliding complete")
+                return similarityArr
+    else:
+        _, welch1 = signal.welch(audioClip1, return_onesided=False)
+        _, welch2 = signal.welch(audioClip2, return_onesided=False)
+        resultWelch = 1 - spatial.distance.cosine(welch1, welch2)
+        return resultWelch
+    return similarityArr
+
+
+def allVideoSliding(audioArr1, audioArr2):
+    maxSimilarity = []
+    for x in range(len(audioArr1)):
+        for i in range(len(audioArr2)):
+            arr = []
+            # if audioArr1[x] != audioArr2[i]:
+                # print(f"Clip 1 shape: {audioArr1[x].shape}\tClip 2 shape: {audioArr2[i].shape}")
+            try:
+                arr = (windowSliding(audioArr1[x], audioArr2[i]))
+                arr = np.array(arr)
+                # print(max(arr))
+                maxSimilarity.append(max(arr))
+            except TypeError:
+                maxSimilarity.append(arr)
+                continue
+
+    return maxSimilarity
 
 
 
-
-def groupSimilarity():
-    bottles = extractAllFFT(audioFilesPlasticBottles)
-    cans = extractAllFFT(audioFilesSodaCans)
-    balls = extractAllFFT(audioFilesTennisBalls)
-    similarity = []
-    count = 0
-    for x in range(len(bottles)):
-        for i in range(len(cans)):
-            welchLen1, welchLen2 = longestAudio(bottles[x], cans[i])
-            _, welchLen1 = signal.welch(welchLen1, return_onesided=False)
-            _, welchLen2 = signal.welch(welchLen2, return_onesided=False)
-            result = spatial.distance.cosine(welchLen1, welchLen2)
-            print(result)
-            similarity.append(result)
-    return float(sum(similarity)/len(similarity))
-
-print(f"Group similarity: {groupSimilarity()}")
-
-#To test individual audio clips against each other
-clip1 = extractFFT(audioFilesSodaCans[1])
-clip2 = extractFFT(audioFilesPlasticBottles[3])
+audioClips1 = extractAllFFT(audioFilesPlasticBottles)
+audioClips2 = extractAllFFT(audioFilesTennisBalls)
 
 
-welch1, welch2 = longestAudio(clip1, clip2)
-periodogram1, periodogram2 = longestAudio(clip1, clip2)
+cosineOutput = np.array(allVideoSliding(audioClips1, audioClips2))
 
-_, welch1 = signal.welch(welch1, return_onesided=False)
-_, welch2 = signal.welch(welch2, return_onesided=False)
+print(cosineOutput.shape)
+for x in range(len(cosineOutput)):
+    print(cosineOutput[x])
 
-_, periodogram1 = signal.periodogram(periodogram1, return_onesided=False)
-_, periodogram2 = signal.periodogram(periodogram2, return_onesided=False)
+def writeCSV(dataset1, dataset2):
+    with open("CSV Files/windowSliding.csv", mode='a', newline='') as f:
+        f.write(f"{dataset1} vs. {dataset2} Similarity\n")
+        for x in range(len(cosineOutput)):
+            f.write(f"{cosineOutput[x]}\n")
+        f.write("\n")
 
-#1 similarity means they are exactly the same, 0 means no correlation
-resultWelch = 1 - spatial.distance.cosine(welch1, welch2)
-# print(resultWelch)
-
-resultPeriodogram = 1 - spatial.distance.cosine(periodogram1, periodogram2)
-# print(resultPeriodogram)
+# writeCSV("Plastic Bottles", "Tennis Balls")
