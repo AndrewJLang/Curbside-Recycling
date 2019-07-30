@@ -6,6 +6,8 @@ from dtw import dtw
 from numpy.linalg import norm
 from scipy.spatial.distance import euclidean
 import numpy as np
+from scipy import spatial
+from fastdtw import fastdtw
 
 THRESHOLD = 50 #for differentiating whether the two audio clips are the same or not (>70 = not the same, 70> = same object)
 signal_arr, index_arr = [], []
@@ -65,6 +67,8 @@ def MFCCSoundSimilarity(audioArr1, arr1Name, audioArr2, arr2Name, sameArr=False)
     # print(f"Average Classification Accuracy: {arr1Name} vs. {arr2Name}= {average}")
     return soundComparison, average
 
+
+
 fileDirectoryPlasticBottles = "../blue_background_sample_images/trimmed_Slomo_audio/plastic_bottles"
 audioFilesPlasticBottles = glob(fileDirectoryPlasticBottles + "/*.wav")
 
@@ -74,13 +78,21 @@ audioFilesSodaCans = glob(fileDirectorySodaCans + "/*.wav")
 fileDirectoryTennisBalls = "../blue_background_sample_images/trimmed_Slomo_audio/tennis_balls"
 audioFilesTennisBalls = glob(fileDirectoryTennisBalls + "/*.wav")
 
-y, sr = lb.load(audioFilesPlasticBottles[0])
-arr = lb.feature.melspectrogram(y=y, sr=sr)
-print(np.array(arr).shape)
+y1, sr1 = lb.load(audioFilesPlasticBottles[0])
+y2, sr2 = lb.load(audioFilesPlasticBottles[0])
 
 
-soda_cans = extractMFCC(audioFilesSodaCans)
-print(np.array(soda_cans))
+def fastDTW(y1, sr1, y2, sr2):
+    mfcc1 = lb.feature.mfcc(y=y1, sr=sr1)
+    mfcc2 = lb.feature.mfcc(y=y2, sr=sr2)
+    print(f"mfcc1: {np.array(mfcc1).shape}\tmfcc2: {np.array(mfcc2).shape}")
+
+    print(f"mfcc1: {np.array(mfcc1).shape}\tmfcc2: {np.array(mfcc2).shape}")
+    dist, path = fastdtw(mfcc1, mfcc2)
+    print(f"dist: {dist}\tpath: {path}")
+    # similarity = spatial.distance.cosine(mfcc1, mfcc2)
+    # print(f"similarity: {similarity}")
+
 # plastic_bottles = extractMFCC(audioFilesPlasticBottles)
 # tennis_balls = extractMFCC(audioFilesTennisBalls)
 
@@ -90,7 +102,7 @@ print(np.array(soda_cans))
 # _, plastic_bottles_avg = MFCCSoundSimilarity(plastic_bottles, "plastic bottles", plastic_bottles, "plastic bottles", sameArr=True)
 # _, plastic_bottles_vs_tennis_balls_avg = MFCCSoundSimilarity(plastic_bottles, "plastic bottles", tennis_balls, "tennis balls", sameArr=False)
 # _, soda_can_vs_plastic_bottles_avg = MFCCSoundSimilarity(plastic_bottles, "plastic bottles", soda_cans, "soda cans", sameArr=False)
-print(f"Threshold: {THRESHOLD}")
+# print(f"Threshold: {THRESHOLD}")
 # print(f"plastic bottles: {plastic_bottles_avg}\nsoda cans: {soda_can_avg}\ntennis balls: {tennis_ball_avg}\n"
     # f"plastic bottles vs. tennis balls: {plastic_bottles_vs_tennis_balls_avg}\nplastic bottles vs. soda cans: {soda_can_vs_plastic_bottles_avg}\n"
     # f"soda cans vs. tennis balls: {soda_can_vs_tennis_ball_avg}\n")
