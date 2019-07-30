@@ -1,10 +1,8 @@
 import numpy as np
-import os
 from glob import glob
 from scipy import spatial
 import librosa as lb
 from sklearn.decomposition import PCA
-from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 
 #NOTE: plastic bottle clip 1 is having problems, returning array that is 1 too large for the y value
 #It is removed from this code
@@ -55,16 +53,7 @@ def pcaAnalysis(frequencyArr):
     print(f"Variance ratio: {pca.explained_variance_ratio_}\tAmount of vectors: {pca.explained_variance_}\t"
         f"Values: {pca.singular_values_}")
     return pca.singular_values_
-
-def LDA(frequencyArr):
-    splitMark = int(len(frequencyArr)*0.8)
-    print(f"Split position: {splitMark}")
-    trainingData = frequencyArr[:splitMark]
-    validation = frequencyArr[splitMark:]
-
-    lda = LinearDiscriminantAnalysis()
-
-LDA(bottle)
+    
 
 similarityArr = np.array(pcaAnalysis(bottle))
 
