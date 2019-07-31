@@ -27,7 +27,7 @@ def shuffle_arrays(arr1, arr2):
         shuffle_arr2[newIndex] = arr2[oldIndex]
     return shuffle_arr1, shuffle_arr2
 
-def extractFFT(audioArr):
+def extractFFT(audioArr, realNum=True):
     fourierArr = []
     fourierComplex = []
     for x in range(len(audioArr)):
@@ -38,40 +38,69 @@ def extractFFT(audioArr):
         fourierArr.append(fourier)
     # print(f"Without complex: {fourierArr}")
     # print(f"With Complex: {fourierComplex}")
-    return fourierArr
+    if realNum is True:
+        return fourierArr
+    else:
+        return fourierComplex
 
 def extractSTFT(audioArr):
     STFTArr = []
     for x in range(len(audioArr)):
         y, sr = lb.load(audioArr[x])
-        stft = np.abs(lb.stft(y))
+        stft = np.abs(lb.stft(y, n_fft=4096))
         STFTArr.append(stft[0])
     return STFTArr
         
 #arrays from the FFT transform
-# bottleFFT = np.array(extractFFT(plasticBottles))
-# canFFT = np.array(extractFFT(sodaCans))
+bottleFFT = np.array(extractFFT(plasticBottles))
+canFFT = np.array(extractFFT(sodaCans))
+ballFFT = np.array(extractFFT(tennisBalls))
+
+# print(f"Shape:\nBottle: {bottleFFT.shape)}\tCan: {canFFT.shape}\tBall: {ballFFT.shape}")
 
 #arrays from the STFT transform
 bottleSTFT = np.array(extractSTFT(plasticBottles))
 canSTFT = np.array(extractSTFT(sodaCans))
 ballSTFT = np.array(extractSTFT(tennisBalls))
 
-wholeArr = np.append(canSTFT, bottleSTFT, axis=0)
+labelsSTFT = []
+#Assign labels according to the object (1=bottle, 2=can, 3=ball)
+bottleLabels = labelsSTFT.extend(np.full(len(bottleSTFT), 1))
+canLabels = labelsSTFT.extend(np.full(len(canSTFT), 2))
+ballLabels = labelsSTFT.extend(np.full(len(ballSTFT), 3))
 
+
+STFTArr = np.append(bottleSTFT, canSTFT, axis=0)
+STFTArr = np.append(STFTArr, ballSTFT, axis=0)
+
+labelsSTFT, valuesSTFT = shuffle_arrays(np.array(labelsSTFT), np.array(STFTArr))
 
 # print(f"shape: {np.array(extractSTFT(plasticBottles)).shape}")
 # print(f"STFT: {extractSTFT(plasticBottles)}")
 
-def LDA(frequencyArr):
+def LDA(frequencyArr, labels):
     splitMark = int(len(frequencyArr)*0.8)
     trainingData = frequencyArr[:splitMark]
     validationData = frequencyArr[splitMark:]
-    labels = [2,1,1,1,1]
 
     lda = LinearDiscriminantAnalysis()
     lda.fit(trainingData,labels[:splitMark])
+    
+    validationLabels = labels[splitMark:]
+    prediction = lda.predict(validationData)
 
-    print(f"prediction: {lda.predict(validationData)}")
+    assert len(validationLabels) == len(prediction)
 
-LDA(wholeArr)
+    count = 0
+    for x in range(len(validationLabels)):
+        if validationLabels[x] == prediction[x]:
+            count += 1
+    accuracy = float(count / len(prediction))
+
+    print(f"training Length: {len(trainingData)}\tvalidation length: {len(validationData)}")
+    print(f"validation labels: {validationLabels}\tpredictions: {prediction}")
+    print(f"Accuracy: {accuracy}")
+
+#LDA on STFT
+LDA(STFTArr, labelsSTFT)
+
