@@ -26,27 +26,26 @@ def extractFFT(audioArr):
 
 #For extracting FFT audio
 bottleFFT = np.array(extractFFT(plasticBottles))
-minLengthArr = (min(map(len, bottleFFT)))
-print(f"Shape: {bottleFFT.shape}")
+minElement = (min(map(len, bottleFFT)))
 
 newArr = []
 for x in range(len(bottleFFT)):
-    newArr.append(FFTArr[x][:minElement])
+    newArr.append(bottleFFT[x][:minElement])
 
-# for x in range(len(bottle)):
-#     print(len(bottle[x]))
+bottleFFT = newArr
 
 #Now perform PCA on the spectrograms of the sound clips
 #This will return the values that the cosine similarity can be taken from
 def pcaAnalysis(frequencyArr):
-    pca = PCA(n_components=0.90, svd_solver='full')
+    pca = PCA(n_components=0.70, svd_solver='full')
     pca.fit(frequencyArr)
-    print(f"Variance ratio: {pca.explained_variance_ratio_}\tAmount of vectors: {pca.explained_variance_}\t"
+    print(f"Variance ratio: {pca.explained_variance_ratio_}\t"
         f"Values: {pca.singular_values_}")
     return pca.singular_values_
 
+similarityArr = np.array(pcaAnalysis(bottleFFT))
+similarityArr = np.reshape(similarityArr, (3,1))
 
-similarityArr = np.array(pcaAnalysis(bottle))
 
 result = 1 - spatial.distance.cosine(similarityArr[0], similarityArr[1])
 print(f"Result: {result}")
