@@ -4,6 +4,7 @@ import os
 from glob import glob
 import matplotlib.pyplot as plt
 from scipy import spatial, signal, interpolate
+from sklearn.decomposition import PCA
 
 sameObject = False
 
@@ -18,7 +19,6 @@ audioFilesTennisBalls = glob(fileDirectoryTennisBalls + "/*.wav")
 
 def extractFFT(audioArr):
     y, sr = lb.load(audioArr)
-    print(f"y: {len(y)}")
     fourier = np.fft.fft(y)
     return fourier
 
@@ -43,6 +43,7 @@ def windowSliding(audioClip1, audioClip2):
     similarityArr = []
     if longestAudio(audioClip1, audioClip2) == 1:
         _, welch2 = signal.welch(audioClip2, return_onesided=False)
+        # pcaAnalysis(np.array(welch2).reshape(1,-1))
         for x in range(0, len(audioClip1), 100):
             try:
                 subClip = audioClip1[x:(len(audioClip2)+x)]
@@ -53,6 +54,7 @@ def windowSliding(audioClip1, audioClip2):
                 return similarityArr
     elif longestAudio(audioClip1, audioClip2) == 0:
         _, welch1 = signal.welch(audioClip1, return_onesided=False)
+        # print(np.array(welch1).shape)
         for x in range(0, len(audioClip2), 100):
             try:
                 subClip = audioClip2[x:(len(audioClip1)+x)]
@@ -103,22 +105,37 @@ def allVideoSliding(audioArr1, audioArr2):
 
     return maxSimilarity
 
+#Does a PCA analysis on the PSD of an audio clip
+def pcaAnalysis(arr1, arr2):
+    pca = PCA(n_components=0.95, svd_solver='full')
+    pca = PCA(n_components=5)
+    pca = PCA()
+    combinedArr = np.concatenate(np.array(arr1), np.array(arr2))
+    print(f"Combined Array: {combinedArr}\tShape: {combinedArr.shape}")
+    pca.fit(combinedArr)
+    print(f"Variance Ratio: {pca.explained_variance_ratio_}")
+    print(f"Values: {pca.singular_values_}")
 
+test1 = np.array([1,4,6,8,9,5,2])
+test2 = np.array([3,6,1,4,6,0,7])
+
+pcaAnalysis(test1, test2)
 
 audioClips1 = extractAllFFT(audioFilesTennisBalls)
 audioClips2 = extractAllFFT(audioFilesTennisBalls)
 
-print(np.array(audioClips1).shape)
-print(np.array(audioClips2).shape)
-
+# combined = np.concatenate(np.array(audioClips1), np.array(audioClips2))
+# print(combined.shape)
 
 # cosineOutput = np.array(allVideoSliding(audioClips1, audioClips2)) #Use this when audioClips1 and audioClips2 are from different files
 
-cosineOutput = np.array(sameObject(audioClips1)) #Use this is audioClips1 and audioClips2 are extracting from the same file
+# cosineOutput = np.array(sameObject(audioClips1)) #Use this is audioClips1 and audioClips2 are extracting from the same file
 
-print(cosineOutput.shape)
-for x in range(len(cosineOutput)):
-    print(cosineOutput[x])
+# print(f"Cosine output: {cosineOutput}")
+
+# print(cosineOutput.shape)
+# for x in range(len(cosineOutput)):
+#     print(cosineOutput[x])
 
 def writeCSV(dataset1, dataset2):
     with open("CSV Files/windowSliding.csv", mode='a', newline='') as f:
@@ -127,4 +144,4 @@ def writeCSV(dataset1, dataset2):
             f.write(f"{cosineOutput[x]}\n")
         f.write("\n")
 
-writeCSV("Tennis Balls", "Tennis Balls")
+# writeCSV("Tennis Balls", "Tennis Balls")
