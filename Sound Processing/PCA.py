@@ -4,13 +4,9 @@ from scipy import spatial
 import librosa as lb
 from sklearn.decomposition import PCA
 
-#NOTE: plastic bottle clip 1 is having problems, returning array that is 1 too large for the y value
-#It is removed from this code
-
 plasticBottles = "../blue_background_sample_images/PCA_audio/plastic_bottles"
 plasticBottles = glob(plasticBottles + "/*.wav")
 
-print(plasticBottles)
 
 #This will convert it from wavelength (y-axis) to frequency (y-axis), x-axis is time
 #Uses the FFT transformation and only returns the real numbers (complex removed)
@@ -27,20 +23,15 @@ def extractFFT(audioArr):
     # print(f"With Complex: {fourierComplex}")
     return fourierArr
 
-#Will extract the audio directly from the clips, will not deal with any transformation
-def extractAudio(audioArr):
-    baseAudio = []
-    for x in range(len(audioArr)):
-        y, sr = lb.load(audioArr[x])
-        baseAudio.append(y)
-    return baseAudio
-
-#for extracting regular audio
-# regularBottle = np.array(extractAudio(plasticBottles))
 
 #For extracting FFT audio
-bottle = np.array(extractFFT(plasticBottles))
-print(f"Shape: {bottle.shape}")
+bottleFFT = np.array(extractFFT(plasticBottles))
+minLengthArr = (min(map(len, bottleFFT)))
+print(f"Shape: {bottleFFT.shape}")
+
+newArr = []
+for x in range(len(bottleFFT)):
+    newArr.append(FFTArr[x][:minElement])
 
 # for x in range(len(bottle)):
 #     print(len(bottle[x]))
@@ -53,7 +44,7 @@ def pcaAnalysis(frequencyArr):
     print(f"Variance ratio: {pca.explained_variance_ratio_}\tAmount of vectors: {pca.explained_variance_}\t"
         f"Values: {pca.singular_values_}")
     return pca.singular_values_
-    
+
 
 similarityArr = np.array(pcaAnalysis(bottle))
 

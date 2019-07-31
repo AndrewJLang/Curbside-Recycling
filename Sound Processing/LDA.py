@@ -1,4 +1,6 @@
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+from sklearn.decomposition import PCA
+from scipy import spatial
 import numpy as np
 import librosa as lb
 from glob import glob
@@ -33,6 +35,7 @@ def extractFFT(audioArr, realNum=True):
     for x in range(len(audioArr)):
         y, sr = lb.load(audioArr[x])
         fourier = np.fft.fft(y)
+        # print(f"Clip {x} sample length: {len(y)}")
         fourierComplex.append(fourier)
         fourier = fourier.real
         fourierArr.append(fourier)
@@ -48,32 +51,53 @@ def extractSTFT(audioArr):
     for x in range(len(audioArr)):
         y, sr = lb.load(audioArr[x])
         stft = np.abs(lb.stft(y, n_fft=4096))
+        # print(f"STFT shape: {np.array(stft).shape}\tcomponent 0: {stft[0]}")
         STFTArr.append(stft[0])
     return STFTArr
-        
+
+minLengthArr = []
 #arrays from the FFT transform
 bottleFFT = np.array(extractFFT(plasticBottles))
-canFFT = np.array(extractFFT(sodaCans))
-ballFFT = np.array(extractFFT(tennisBalls))
+minLengthArr.append(min(map(len, bottleFFT)))
 
-# print(f"Shape:\nBottle: {bottleFFT.shape)}\tCan: {canFFT.shape}\tBall: {ballFFT.shape}")
+canFFT = np.array(extractFFT(sodaCans))
+minLengthArr.append(min(map(len, canFFT)))
+
+ballFFT = np.array(extractFFT(tennisBalls))
+minLengthArr.append(min(map(len, ballFFT)))
+
+minElement = min(minLengthArr)
+
+FFTArr = np.append(bottleFFT, canFFT, axis=0)
+FFTArr = np.append(FFTArr, ballFFT, axis=0)
+
+#Need to make the audio clips' FFT signals all the same length, will trim down to min value of group
+newArr = []
+for x in range(len(FFTArr)):
+    newArr.append(FFTArr[x][:minElement])
+
+# print(f"Shape: {np.array(newArr).shape}")
+FFTArr = newArr
+
+#Assign labels according to the object (1=bottle, 2=can, 3=ball)
+labels = []
+bottleLabels = labels.extend(np.full(len(bottleFFT), 1))
+canLabels = labels.extend(np.full(len(canFFT), 2))
+ballLabels = labels.extend(np.full(len(ballFFT), 3))
+
+
+labelsFFT, valuesFFT = shuffle_arrays(np.array(labels), np.array(FFTArr))
 
 #arrays from the STFT transform
 bottleSTFT = np.array(extractSTFT(plasticBottles))
 canSTFT = np.array(extractSTFT(sodaCans))
 ballSTFT = np.array(extractSTFT(tennisBalls))
 
-labelsSTFT = []
-#Assign labels according to the object (1=bottle, 2=can, 3=ball)
-bottleLabels = labelsSTFT.extend(np.full(len(bottleSTFT), 1))
-canLabels = labelsSTFT.extend(np.full(len(canSTFT), 2))
-ballLabels = labelsSTFT.extend(np.full(len(ballSTFT), 3))
-
 
 STFTArr = np.append(bottleSTFT, canSTFT, axis=0)
 STFTArr = np.append(STFTArr, ballSTFT, axis=0)
 
-labelsSTFT, valuesSTFT = shuffle_arrays(np.array(labelsSTFT), np.array(STFTArr))
+labelsSTFT, valuesSTFT = shuffle_arrays(np.array(labels), np.array(STFTArr))
 
 # print(f"shape: {np.array(extractSTFT(plasticBottles)).shape}")
 # print(f"STFT: {extractSTFT(plasticBottles)}")
@@ -97,10 +121,41 @@ def LDA(frequencyArr, labels):
             count += 1
     accuracy = float(count / len(prediction))
 
-    print(f"training Length: {len(trainingData)}\tvalidation length: {len(validationData)}")
+    # print(f"training Length: {len(trainingData)}\tvalidation length: {len(validationData)}")
     print(f"validation labels: {validationLabels}\tpredictions: {prediction}")
     print(f"Accuracy: {accuracy}")
 
-#LDA on STFT
-LDA(STFTArr, labelsSTFT)
+# #LDA on FFT
+# LDA(valuesFFT, labelsFFT)
 
+#LDA on STFT
+# LDA(valuesSTFT, labelsSTFT)
+
+#NOTE: LDA does not work as well on FFT as STFT. May be lack of data; unclear exactly how STFT works
+
+def pcaAnalysis(frequencyArr):
+    pca = PCA(n_components=0.90, svd_solver='full')
+    pca.fit(frequencyArr)
+    print(f"Variance ratio: {pca.explained_variance_ratio_}\t"
+        f"Values: {pca.singular_values_}")
+    return pca.singular_values_
+
+#NOTE: There is only 16 elements inside similarityArr instead of 21; 5 tennis balls are being left out
+similarityArr = np.array(pcaAnalysis(FFTArr))
+print(len(similarityArr))
+
+bottlePCA = similarityArr[:len(bottleFFT)]
+canPCA = similarityArr[len(bottleFFT):(len(canFFT)+len(bottleFFT))]
+ballPCA = similarityArr[(len(bottleFFT)+len(canFFT)):]
+
+#Check and see that they are all the proper length
+# print(f"bottle: {len(bottlePCA)}\tcan: {len(canPCA)}\tball: {len(ballPCA)}")
+
+result = 1 - spatial.distance.cosine(bottlePCA, canPCA[:5])
+print(f"Bottle vs can: {result}")
+
+# result = 1 - spatial.distance.cosine(bottlePCA, ballPCA)
+# print(f"Bottle vs ball: {result}")
+
+# result = 1 - spatial.distance.cosine(ballPCA, canPCA)
+# print(f"Ball vs can: {result}")
