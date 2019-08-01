@@ -5,6 +5,7 @@ import numpy as np
 import librosa as lb
 from glob import glob
 import warnings
+from scipy import stats
 
 #Will suppress all warnings (not recommended)
 warnings.filterwarnings("ignore")
@@ -136,26 +137,30 @@ def LDA(frequencyArr, labels):
 def pcaAnalysis(frequencyArr):
     pca = PCA(n_components=0.90, svd_solver='full')
     pca.fit(frequencyArr)
-    print(f"Variance ratio: {pca.explained_variance_ratio_}\t"
-        f"Values: {pca.singular_values_}")
-    return pca.singular_values_
+    print(f"Variance ratio: {pca.explained_variance_ratio_}\tNumber of elements: "
+    f"{len(pca.explained_variance_ratio_)}")
+    pca_data = pca.transform(frequencyArr)
+    return pca_data
 
-#NOTE: There is only 16 elements inside similarityArr instead of 21; 5 tennis balls are being left out
-similarityArr = np.array(pcaAnalysis(FFTArr))
-print(len(similarityArr))
 
-bottlePCA = similarityArr[:len(bottleFFT)]
-canPCA = similarityArr[len(bottleFFT):(len(canFFT)+len(bottleFFT))]
-ballPCA = similarityArr[(len(bottleFFT)+len(canFFT)):]
+pca_transform = np.array(pcaAnalysis(FFTArr))
+print(f"PCA transform shape: {pca_transform.shape}")
 
-#Check and see that they are all the proper length
-# print(f"bottle: {len(bottlePCA)}\tcan: {len(canPCA)}\tball: {len(ballPCA)}")
 
-result = 1 - spatial.distance.cosine(bottlePCA, canPCA[:5])
-print(f"Bottle vs can: {result}")
+print(f"Original FFT shape: {np.array(FFTArr).shape}")
 
-# result = 1 - spatial.distance.cosine(bottlePCA, ballPCA)
-# print(f"Bottle vs ball: {result}")
+bottlePCA = pca_transform[:len(bottleFFT)]
+print(f"bottle pca shape: {bottlePCA.shape}")
 
-# result = 1 - spatial.distance.cosine(ballPCA, canPCA)
-# print(f"Ball vs can: {result}")
+canPCA = pca_transform[len(bottleFFT):(len(canFFT)+len(bottleFFT))]
+print(f"can pca shape: {canPCA.shape}")
+
+ballPCA = pca_transform[(len(bottleFFT)+len(canFFT)):]
+print(f"ball pca shape: {ballPCA.shape}")
+
+# result = 1 - spatial.distance.cosine(ballPCA[4], ballPCA[2])
+result = 1 - spatial.distance.correlation(canPCA[4], canPCA[1])
+print(f"Result: {result}")
+
+statAns = stats.pearsonr(ballPCA[4], canPCA[3])
+print(f"correlation coeff: {statAns[0]}\tP-value: {statAns[1]}")
