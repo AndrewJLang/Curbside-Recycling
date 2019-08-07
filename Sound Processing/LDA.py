@@ -122,12 +122,13 @@ def LDA(frequencyArr, labels):
             count += 1
     accuracy = float(count / len(prediction))
 
-    # print(f"training Length: {len(trainingData)}\tvalidation length: {len(validationData)}")
+    print(f"training Length: {len(trainingData)}\tvalidation length: {len(validationData)}")
     print(f"validation labels: {validationLabels}\tpredictions: {prediction}")
     print(f"Accuracy: {accuracy}")
 
 # #LDA on FFT
-# LDA(valuesFFT, labelsFFT)
+LDA(valuesFFT, labelsFFT)
+
 
 #LDA on STFT
 # LDA(valuesSTFT, labelsSTFT)
@@ -143,24 +144,24 @@ def pcaAnalysis(frequencyArr):
     return pca_data
 
 
-pca_transform = np.array(pcaAnalysis(FFTArr))
-print(f"PCA transform shape: {pca_transform.shape}")
+# pca_transform = np.array(pcaAnalysis(FFTArr))
+# print(f"PCA transform shape: {pca_transform.shape}")
 
 
-print(f"Original FFT shape: {np.array(FFTArr).shape}")
+# print(f"Original FFT shape: {np.array(FFTArr).shape}")
 
-bottlePCA = pca_transform[:len(bottleFFT)]
-print(f"bottle pca shape: {bottlePCA.shape}")
+# bottlePCA = pca_transform[:len(bottleFFT)]
+# print(f"bottle pca shape: {bottlePCA.shape}")
 
-canPCA = pca_transform[len(bottleFFT):(len(canFFT)+len(bottleFFT))]
-print(f"can pca shape: {canPCA.shape}")
+# canPCA = pca_transform[len(bottleFFT):(len(canFFT)+len(bottleFFT))]
+# print(f"can pca shape: {canPCA.shape}")
 
-ballPCA = pca_transform[(len(bottleFFT)+len(canFFT)):]
-print(f"ball pca shape: {ballPCA.shape}")
+# ballPCA = pca_transform[(len(bottleFFT)+len(canFFT)):]
+# print(f"ball pca shape: {ballPCA.shape}")
 
-# result = 1 - spatial.distance.cosine(ballPCA[4], ballPCA[2])
-result = 1 - spatial.distance.correlation(canPCA[4], canPCA[1])
-print(f"Result: {result}")
+# # result = 1 - spatial.distance.cosine(ballPCA[4], ballPCA[2])
+# result = 1 - spatial.distance.correlation(canPCA[4], canPCA[1])
+# print(f"Result: {result}")
 
-statAns = stats.pearsonr(ballPCA[4], canPCA[3])
-print(f"correlation coeff: {statAns[0]}\tP-value: {statAns[1]}")
+# statAns = stats.pearsonr(ballPCA[4], canPCA[3])
+# print(f"correlation coeff: {statAns[0]}\tP-value: {statAns[1]}")
