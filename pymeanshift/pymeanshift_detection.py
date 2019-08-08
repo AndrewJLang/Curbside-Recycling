@@ -1,5 +1,5 @@
 import cv2
-# import pymeanshift as pms
+import pymeanshift as pms
 import os
 
 #NOTE: This will not work on my computer, needs to be run on box where pms is installed and setup
@@ -43,8 +43,8 @@ def pmsTransformation(objectType):
             path = filePath + objectType + "/" + x + "/" + i
             print(path)
             original_image = cv2.imread(path)
-            # (segmented_image, labels_image, number_regions) = pms.segment(original_image, spatial_radius=10, range_radius=10, min_density=300)
-            status = cv2.imwrite(writePath + "/video_" + x + "_frame_" + i + ".jpg", original_image)
+            (segmented_image, labels_image, number_regions) = pms.segment(original_image, spatial_radius=10, range_radius=10, min_density=300)
+            status = cv2.imwrite(writePath + "/video_" + x + "_frame_" + i + ".jpg", segmented_image)
 
 
 pmsTransformation("tennis_balls")
