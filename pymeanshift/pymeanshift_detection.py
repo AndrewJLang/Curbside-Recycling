@@ -44,12 +44,12 @@ def pmsTransformation(objectType):
             print(path)
             original_image = cv2.imread(path)
             (segmented_image, labels_image, number_regions) = pms.segment(original_image, spatial_radius=10, range_radius=10, min_density=300)
-            status = cv2.imwrite(writePath + f"/video_{x}_frame_{i}.jpg", original_image)
+            status = cv2.imwrite(writePath + "/video_" + x + "_frame_" + i + ".jpg", segmented_image)
 
 
-pmsTransformation("tennis_balls")
-pmsTransformation("plastic_bottles")
-pmsTransformation("soda_cans")
+# pmsTransformation("tennis_balls")
+# pmsTransformation("plastic_bottles")
+# pmsTransformation("soda_cans")
 
 
 #NOTE: David commented out code below, should be doing same thing as code above using pms
