@@ -1,5 +1,5 @@
 import cv2
-# import pymeanshift as pms
+import pymeanshift as pms
 import os
 
 #NOTE: This will not work on my computer, needs to be run on box where pms is installed and setup
