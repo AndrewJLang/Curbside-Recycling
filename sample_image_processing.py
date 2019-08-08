@@ -16,8 +16,8 @@ def createFolder(folderName):
 def convertVideos(fileLocation, folderName):
     count = 1
     for x in os.listdir("./" + fileLocation + "/"):        
-        createFolder("./sample_images/" + folderName + "/video_" + str(count) + "_frames")
-        os.system("ffmpeg -i sample_images/" + folderName + "/" + x + " -r 4 sample_images/" + folderName + "/video_" + str(count) + "_frames/image%05d.jpg -hide_banner")
+        createFolder("./blue_background_sample_images/regular_speed_frames/" + folderName + "/video_" + str(count) + "_frames")
+        os.system("ffmpeg -i blue_background_sample_images/regular_speed/" + folderName + "/" + x + " -r 4 blue_background_sample_images/regular_speed_frames/" + folderName + "/video_" + str(count) + "_frames/image%05d.jpg -hide_banner")
         count += 1
 
 def convertAudio(fileLocation, folderName):
@@ -30,5 +30,5 @@ def convertAudio(fileLocation, folderName):
         count += 1
 
 # Need to be changed accordingly to proper directory
-# convertVideos("./sample_images/soda_cans", "soda_cans")
-convertAudio("./blue_background_sample_images/regular_speed/tennis_balls", "tennis_balls")
+# convertVideos("./blue_background_sample_images/regular_speed/plastic_bottles", "plastic_bottles")
+# convertAudio("./blue_background_sample_images/regular_speed/tennis_balls", "tennis_balls")
