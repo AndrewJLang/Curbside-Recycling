@@ -1,7 +1,13 @@
 **/sample_images
-**/blue_background_sample_images
 **/Raspberry Pi Code
 **/.vscode
 /Neural Network**/CSV Files
 /Sound Processing/CSV Files
+/blue_background_sample_images/slow_motion
+/blue_background_sample_images/regular_trimmed_audio
+/blue_background_sample_images/trimmed_Slomo_audio
+/blue_background_sample_images/regular_speed
+/blue_background_sample_images/PCA_audio
+/blue_background_sample_images/new mixed videos
+/blue_background_sample_images/regular_speed.zip
 /pymeanshift/pms_images
