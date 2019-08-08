@@ -13,3 +13,11 @@ epochs = 1000
 
 trainingLabels = to_categorical(trainingLabels)
 validationLabels = to_categorical(validationLabels)
+
+model = Sequential()
+
+model.add(Conv2D(64, kernel_size=3, activation='relu', input_shape=(28,28,1)))
+model.add(Conv2D(64, kernel_size=3, activation='relu'))
+model.add(Flatten())
+model.add(Dense(10, activation='softmax'))
+
