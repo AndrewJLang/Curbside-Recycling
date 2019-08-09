@@ -23,8 +23,8 @@ import os
 
 def pmsTransformation(objectType):
     #file path(s) to different objects
-    filePath = "../blue_background_sample_images/regular_speed_frames/"
-    writePath = "pms_images/" + objectType
+    filePath = "../mixed_video_frames/"
+    writePath = "mixed_videos/"
 
     try:
     # Creating a folder named data
@@ -32,22 +32,21 @@ def pmsTransformation(objectType):
             os.makedirs(writePath)
         else:
             print('folder already exists with files')
-            return
     # If not created, then raise error
     except OSError:
         print (OSError)
         return
 
-    for x in os.listdir(filePath + objectType + "/"):
-        for i in os.listdir(filePath + objectType + "/" + x):
-            path = filePath + objectType + "/" + x + "/" + i
+    for x in os.listdir(filePath + "/"):
+        for i in os.listdir(filePath + "/" + x):
+            path = filePath + x + "/" + i
             print(path)
             original_image = cv2.imread(path)
             (segmented_image, labels_image, number_regions) = pms.segment(original_image, spatial_radius=10, range_radius=10, min_density=300)
-            status = cv2.imwrite(writePath + "/video_" + x + "_frame_" + i + ".jpg", segmented_image)
+            status = cv2.imwrite(writePath + "video_" + x + "_frame_" + i + ".jpg", segmented_image)
 
 
-# pmsTransformation("tennis_balls")
+pmsTransformation("tennis_balls")
 # pmsTransformation("plastic_bottles")
 # pmsTransformation("soda_cans")
 
