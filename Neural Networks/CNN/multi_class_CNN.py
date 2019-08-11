@@ -9,6 +9,12 @@ from keras_preprocessing import image
 import matplotlib.pyplot as plt
 import os
 import csv
+import argparse
+
+ap = argparse.ArgumentParser()
+ap.add_argument("-e", "--epochs", required=True)
+ap.add_argument("-b", "--batch", required=True)
+args = vars(ap.parse_args())
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
@@ -62,8 +68,8 @@ trainingData, trainingLabels = data[:split], labels[:split]
 validationData, validationLabels = data[split:], labels[split:]
 
 num_classes = len(labels[0])
-batchSize = 1
-epoch = 10
+batchSize = int(args['batch'])
+epoch = int(args['epochs'])
 learningrate = 0.001
 
 imgShape = trainingData[0].shape
