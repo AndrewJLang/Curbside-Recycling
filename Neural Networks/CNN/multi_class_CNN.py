@@ -95,6 +95,18 @@ model.compile(optimizer=Adam(lr=learningrate), loss=categorical_crossentropy, me
 
 model.fit(trainingData, trainingLabels, batch_size=batchSize, epochs=epoch, verbose=1)
 
+predictionArr = model.predict_classes(validationData).reshape(-1)
+
 _, accuracy = model.evaluate(validationData, validationLabels, verbose=1)
+
+validationLabels = np.argmax(validationLabels, axis=1)
+
+#count = 0
+#for x in range(len(validationLabels)):
+   # print(f"Correct value: {validationLabels(x)}\tReturned value: {predictionArr(x)}")
+  #  if validationLabels(x) == predictionArr(x):
+ #       count += 1
+
+#print(f"Test: {float(count/len(validationLabels))}")
 
 print(f"Model validation accuracy: {accuracy}")
