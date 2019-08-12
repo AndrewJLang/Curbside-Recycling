@@ -59,9 +59,6 @@ def multiClassImgs():
 data = np.array(processImgs())
 labels = to_categorical(multiClassImgs())
 data, labels = shuffle_arrays(data,labels)
-labels = to_categorical(labels)
-labels = labels[:, :, 0]
-print(labels.shape)
 split = int(len(data) * 0.8)
 
 trainingData, trainingLabels = data[:split], labels[:split]
@@ -99,14 +96,17 @@ predictionArr = model.predict_classes(validationData).reshape(-1)
 
 _, accuracy = model.evaluate(validationData, validationLabels, verbose=1)
 
+# print(validationLabels.shape)
+
 validationLabels = np.argmax(validationLabels, axis=1)
 
-#count = 0
-#for x in range(len(validationLabels)):
-   # print(f"Correct value: {validationLabels(x)}\tReturned value: {predictionArr(x)}")
-  #  if validationLabels(x) == predictionArr(x):
- #       count += 1
+count = 0
+for x in range(len(validationLabels)):
+   print(f"Correct value: {validationLabels[x]}")
+   if validationLabels[x] == predictionArr[x]:
+       count += 1
 
-#print(f"Test: {float(count/len(validationLabels))}")
+#Both accuracies should be the same
+print(f"Test validation accuracy: {float(count/len(validationLabels))}")
 
 print(f"Model validation accuracy: {accuracy}")
