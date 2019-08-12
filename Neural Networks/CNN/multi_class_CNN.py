@@ -84,7 +84,7 @@ model.add(Dropout(0.2))
 model.add(Flatten())
 
 model.add(Dense(500, activation='relu'))
-model.add(Dropout(.5))
+model.add(Dropout(.2))
 
 model.add(Dense(num_classes, activation='softmax'))
 
@@ -100,13 +100,9 @@ _, accuracy = model.evaluate(validationData, validationLabels, verbose=1)
 
 validationLabels = np.argmax(validationLabels, axis=1)
 
-count = 0
-for x in range(len(validationLabels)):
-   print(f"Correct value: {validationLabels[x]}")
-   if validationLabels[x] == predictionArr[x]:
-       count += 1
 
-#Both accuracies should be the same
-print(f"Test validation accuracy: {float(count/len(validationLabels))}")
+for x in range(len(validationLabels)):
+   print(f"Correct object type: {validationLabels[x]}\tGuessed object: {predictionArr[x]}")
+
 
 print(f"Model validation accuracy: {accuracy}")
