@@ -115,8 +115,18 @@ def extractVectors(arr):
 #Now to extract the tensor for each object/image
 ballTensor = extractVectors(ballConv)
 bottleTensor = extractVectors(bottleConv)
+print(ballTensor.shape)
+print(bottleTensor.shape)
 
-tensor = np.append(ballTensor, bottleTensor)
-print(tensor.shape)
+#Properly concatenates lists
+#tensor = np.concatenate((ballTensor,bottleTensor), axis=0)
 
-# for x in len(tensor)
+labels = [objectDict['ball'] for x in range(len(ballTensor))]
+labels.extend([objectDict['bottle'] for x in range(len(bottleTensor))])
+print(labels)
+
+newlab = to_categorical(labels)
+print(newlab)
+
+
+
