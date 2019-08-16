@@ -74,6 +74,14 @@ def createLabels():
         labelArr.append(positions)
     return np.array(labelArr)
 
+def getVectors(arr):
+    tensorArr = []
+    for x in range(len(arr)):
+        featureVector = np.reshape(arr[x], newshape=-1)
+        tensorArr.append(featureVector)
+    return tensorArr
+
+
 #Create the individual binary labels for whether a certain label is in the image
 ballLabels = labelIndividualData('ball')
 canLabels = labelIndividualData('can')
@@ -90,19 +98,36 @@ imgShape = data[0].shape
 
 #shuffle data sets and labels
 ballData, ballLabels = shuffle_arrays(data, ballLabels)
+bottleData, bottleLabels = shuffle_arrays(data, bottleLabels)
 
 
 #individual CNN's for each image, fed into their own NN's
 modelBall = Sequential()
 modelBall.add(Conv2D(filters=16, kernel_size=(2,2), strides=(1,1), padding='valid', activation='relu', bias_initializer=RandomNormal(), input_shape=imgShape))
-ballOptimizer = modelBall.compile(optimizer=Adam(lr=0.01), loss=categorical_crossentropy, metrics=['accuracy'])
-#Direct predicition with no training of this model
-prediction = modelBall.predict_classes(ballData, batch_size=1)
-print(prediction)
+ballConv = np.array(modelBall.predict(ballData))
+print(f"shape: {ballConv.shape}")
+#ballPrediction = modelBall.compile(optimizer=Adam(lr=0.01), loss=categorical_crossentropy, metrics=['accuracy'])
 
-# modelBottle = Sequential()
-# modelBottle.add(Conv2D(filters=16, kernel_size=(2,2), strides=(1,1), padding='valid', activation='relu', bias_initializer=RandomNormal(), input_shape=imgShape))
-# ballOptimizer = modelBottle.compile(optimizer=Adam(lr=0.01), loss=categorical_crossentropy, metrics=['accuracy'])
-# #Direct predicition with no training of this model
-# prediction = modelBottle.predict_classes(ballData, batch_size=1)
-# print(prediction)
+
+modelBottle = Sequential()
+modelBottle.add(Conv2D(filters=16, kernel_size=(2,2), strides=(1,1), padding='valid', activation='relu', bias_initializer=RandomNormal(), input_shape=imgShape))
+bottleConv = np.array(modelBottle.predict(bottleData))
+print(f"shape: {bottleConv.shape}")
+#bottlePrediction = modelBottle.compile(optimizer=Adam(lr=0.01), loss=categorical_crossentropy, metrics=['accuracy'])
+
+ballTensor = getVectors(ballData)
+bottleTensor = getVectors(bottleData)
+
+print(np.array(ballTensor).shape)
+
+tensor = np.concatenate((ballTensor, bottleTensor), axis=0)
+print(tensor.shape)
+
+labels = [0,0,0,0,0,0,0,0,0,0,0,2,2,2,2,2,2,2,2,2,2,2,2,2]
+labels = to_categorical(labels)
+
+allObjects = Sequential()
+allObjects.compile(optimizer=Adam(lr=0.01), loss=categorical_crossentropy, metrics=['accuracy'])
+allObjects.fit(tensor, labels, batch_size=10, epochs=10)
+
+
