@@ -92,11 +92,12 @@ imgShape = ballData[0].shape
 
 #create the models for each batch of images
 
-#QUESTION: Do I need to create a separate model for each object?
 modelBall = Sequential()
 modelBall.add(Conv2D(filters=16, kernel_size=(2,2), strides=(1,1), padding='valid', activation='relu', bias_initializer=RandomNormal(), input_shape=imgShape))
-ballConv = modelBall.predict(ballData)
-print(ballConv.shape)
+modelBall.compile(optimizer=Adam(lr=0.01), loss=categorical_crossentropy, metrics=['accuracy'])
+modelBall.fit()
+
+
 
 modelBottle = Sequential()
 modelBottle.add(Conv2D(filters=16, kernel_size=(2,2), strides=(1,1), padding='valid', activation='relu', bias_initializer=RandomNormal(), input_shape=imgShape))
@@ -113,20 +114,20 @@ def extractVectors(arr):
     return np.array(tensorArr)
 
 #Now to extract the tensor for each object/image
-ballTensor = extractVectors(ballConv)
-bottleTensor = extractVectors(bottleConv)
-print(ballTensor.shape)
-print(bottleTensor.shape)
+# ballTensor = extractVectors(ballConv)
+# bottleTensor = extractVectors(bottleConv)
+# print(ballTensor.shape)
+# print(bottleTensor.shape)
 
-#Properly concatenates lists
-#tensor = np.concatenate((ballTensor,bottleTensor), axis=0)
+# #Properly concatenates lists
+# #tensor = np.concatenate((ballTensor,bottleTensor), axis=0)
 
-labels = [objectDict['ball'] for x in range(len(ballTensor))]
-labels.extend([objectDict['bottle'] for x in range(len(bottleTensor))])
-print(labels)
+# labels = [objectDict['ball'] for x in range(len(ballTensor))]
+# labels.extend([objectDict['bottle'] for x in range(len(bottleTensor))])
+# print(labels)
 
-newlab = to_categorical(labels)
-print(newlab)
+# #properly converts labels
+# newlab = to_categorical(labels)
+# print(newlab)
 
-
-
+#NOTE: Where the tensors from each object will be fed through a NN for learning
