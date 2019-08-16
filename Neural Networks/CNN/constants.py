@@ -1,9 +1,8 @@
-#Constants for the CNN
-
 import numpy as np
 from keras_preprocessing import image
+import os
 
-data_dir = "../../pymeanshift/pms_images/"
+data_dir = "../../pymeanshift/pms_mixed_frames/"
 
 #Extracts the images and places them in an array
 def processImgs():
@@ -40,8 +39,64 @@ def getTensors(arr):
     for x in range(len(arr)):
         featureVector = np.reshape(arr[x], newshape=-1)
         tensorArr.append(featureVector)
-    return tensorArr
+    return np.array(tensorArr)
 
+def createLabels():
+    labelArr = []
+    objectTypes = ['ball', 'can', 'bottle', 'paper']
+    for x in os.listdir(data_dir):
+        positions = np.zeros(5)
+        for i in range(len(objectTypes)):
+            if objectTypes[i] in x:
+                positions[i] = 1
+        if np.count_nonzero(positions) == 0:
+            positions[4] = 1
+        labelArr.append(positions)
+    return np.array(labelArr)
+
+def separateDataTypes(data, labels):
+    ballData, bottleData, canData, paperData, backgroundData = [], [], [], [], []
+    for x in range(len(data)):
+        if labels[x][0] == 1:
+            ballData.append(data[x])
+        if labels[x][1] == 1:
+            bottleData.append(data[x])
+        if labels[x][2] == 1:
+            canData.append(data[x])
+        if labels[x][3] == 1:
+            paperData.append(data[x])
+        if labels[x][4] == 1:
+            backgroundData.append(data[x])
+    return np.array(ballData), np.array(bottleData), np.array(canData), np.array(paperData), np.array(backgroundData)
+
+#graph's both the training and validation data to see performance
+def model_data(model):
+    fig, axs = plt.subplots(2,2, figsize=(12,8), constrained_layout=True)
+    axs[0][0].plot(range(1, len(model.history['acc'])+1), model.history['acc'])
+    axs[0][0].set_title('Training Accuracy')
+    axs[0][0].set_ylabel('Accuracy')
+    axs[0][0].set_xlabel('Epoch')
+    axs[0][0].set_xticks(np.arange(1,len(model.history['acc'])+1),len(model.history['acc'])/10)
+
+    axs[0][1].plot(range(1, len(model.history['val_acc'])+1), model.history['val_acc'])
+    axs[0][1].set_title('Validation Accuracy')
+    axs[0][1].set_ylabel('Accuracy')
+    axs[0][1].set_xlabel('Epoch')
+    axs[0][1].set_xticks(np.arange(1,len(model.history['val_acc'])+1),len(model.history['val_acc'])/10)
+
+    axs[1][0].plot(range(1, len(model.history['loss'])+1), model.history['loss'])
+    axs[1][0].set_ylabel('Loss')
+    axs[1][0].set_title('Training Loss')
+    axs[1][0].set_xlabel('Epoch')
+    axs[1][0].set_xticks(np.arange(1, len(model.history['loss'])+1), len(model.history['loss'])/10)
+    
+    axs[1][1].plot(range(1, len(model.history['val_loss'])+1), model.history['val_loss'])
+    axs[1][1].set_ylabel('Loss')
+    axs[1][1].set_title('Validation Loss')
+    axs[1][1].set_xlabel('Epoch')
+    axs[1][1].set_xticks(np.arange(1, len(model.history['val_loss'])+1), len(model.history['val_loss'])/10)
+
+    plt.show()
 
 #Variables
 objectDict = {
@@ -58,4 +113,11 @@ BALLKERNEL = (2,2)
 BOTTLEKERNEL = (2,2)
 CANKERNEL = (2,2)
 PAPERKERNEL = (2,2)
-OTHERKERNEL = (2,2)
+BACKGROUNDKERNEL = (2,2)
+learningrate = 0.01
+PADDING='valid'
+class_count = 5 #ball, bottle, can, paper, background...can add cardboard later
+
+#Variables for FC layers
+finalLayerBatchSize = 10
+EPOCHCOUNT = 10
