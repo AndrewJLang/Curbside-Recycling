@@ -90,10 +90,15 @@ model.add(Dense(num_classes, activation='softmax'))
 
 model.compile(optimizer=Adam(lr=learningrate), loss=categorical_crossentropy, metrics=['accuracy'])
 
+print(validationData.shape)
+
+predictionArr = model.predict_classes(validationData).reshape(-1)
+print(predictionArr.shape)
+
 model.fit(trainingData, trainingLabels, batch_size=batchSize, epochs=epoch, verbose=1)
 
 predictionArr = model.predict_classes(validationData).reshape(-1)
-
+print(predictionArr.shape)
 _, accuracy = model.evaluate(validationData, validationLabels, verbose=1)
 
 # print(validationLabels.shape)

@@ -95,7 +95,7 @@ imgShape = ballData[0].shape
 modelBall = Sequential()
 modelBall.add(Conv2D(filters=16, kernel_size=(2,2), strides=(1,1), padding='valid', activation='relu', bias_initializer=RandomNormal(), input_shape=imgShape))
 modelBall.compile(optimizer=Adam(lr=0.01), loss=categorical_crossentropy, metrics=['accuracy'])
-modelBall.fit()
+ballConv = modelBottle.predict(ballData)
 
 
 
@@ -114,9 +114,9 @@ def extractVectors(arr):
     return np.array(tensorArr)
 
 #Now to extract the tensor for each object/image
-# ballTensor = extractVectors(ballConv)
+ballTensor = extractVectors(ballConv)
 # bottleTensor = extractVectors(bottleConv)
-# print(ballTensor.shape)
+print(ballTensor.shape)
 # print(bottleTensor.shape)
 
 # #Properly concatenates lists
