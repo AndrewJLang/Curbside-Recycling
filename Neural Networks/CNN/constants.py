@@ -8,7 +8,7 @@ data_dir = "../../pymeanshift/pms_mixed_frames/"
 def processImgs():
     data = []
     for x in os.listdir(data_dir):
-        img = image.load_img(data_dir + x, target_size=(400,400))
+        img = image.load_img(data_dir + x, target_size=(199,199))
         img = image.img_to_array(img)
         img = img / 255
         data.append(img)
@@ -107,7 +107,11 @@ objectDict = {
     'other': 4
 }
 
-FILTERCOUNT = 16
+BALLBATCHSIZE = 1
+
+EPOCHCOUNT = 10
+VERB=1
+FILTERCOUNT = 3
 STRIDES = (1,1)
 BALLKERNEL = (2,2)
 BOTTLEKERNEL = (2,2)
@@ -115,9 +119,5 @@ CANKERNEL = (2,2)
 PAPERKERNEL = (2,2)
 BACKGROUNDKERNEL = (2,2)
 learningrate = 0.01
-PADDING='valid'
+PADDING='same'
 class_count = 5 #ball, bottle, can, paper, background...can add cardboard later
-
-#Variables for FC layers
-finalLayerBatchSize = 10
-EPOCHCOUNT = 10
