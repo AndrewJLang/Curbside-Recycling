@@ -47,22 +47,22 @@ The separation will be done using an 80/20 split
 """
 splitMark = int(len(data) * 0.8)
 
-trainingData, validationData = data[:splitMark], data[splitMark:]
+trainingData, validationData = np.array(data[:splitMark]), data[splitMark:]
 ballTrainingLabels, ballValidationLabels = data[:splitMark], data[splitMark:]
 canTrainingLabels, canValidationLabels = data[:splitMark], data[splitMark:]
 bottleTrainingLabels, bottleValidationLabels = data[:splitMark], data[splitMark:]
 paperTrainingLabels, paperValidationLabels = data[:splitMark], data[splitMark:]
-backgroundTrainingLabels, backgroundValidationLabels = data[:splitMark], data[splitMark:]
+backgroundTrainingLabels, backgroundValidationLabels = np.array(data[:splitMark]), data[splitMark:]
 
 print(np.array(trainingData).shape)
 
 #NOTE: I need to learn how to save the models for easier test validation
 
 #Ball model
-modelBall = Sequential()
-modelBall.add(Conv2D(filters=constants.FILTERCOUNT, kernel_size=constants.BALLKERNEL, strides=constants.STRIDES, padding=constants.PADDING, activation='relu', bias_initializer=RandomNormal(), input_shape=(199,199,3)))
-modelBall.compile(optimizer=Adam(lr=constants.learningrate), loss=categorical_crossentropy, metrics=['accuracy'])
-modelBall.fit(np.array(trainingData), np.array(ballTrainingLabels), batch_size=constants.BALLBATCHSIZE, epochs=constants.EPOCHCOUNT, verbose=1)
+# modelBall = Sequential()
+# modelBall.add(Conv2D(filters=constants.FILTERCOUNT, kernel_size=constants.BALLKERNEL, strides=constants.STRIDES, padding=constants.PADDING, activation='relu', bias_initializer=RandomNormal(), input_shape=(199,199,3)))
+# modelBall.compile(optimizer=Adam(lr=constants.learningrate), loss=categorical_crossentropy, metrics=['accuracy'])
+# modelBall.fit(np.array(trainingData), np.array(ballTrainingLabels), batch_size=constants.BALLBATCHSIZE, epochs=constants.EPOCHCOUNT, verbose=1)
 
 
 # #Can model
@@ -86,12 +86,16 @@ modelBall.fit(np.array(trainingData), np.array(ballTrainingLabels), batch_size=c
 # paperPredictions = modelPaper.predict(paperData)
 # print(paperPredictions.shape)
 
-# #Background/other model
-# modelBackground = Sequential()
-# modelBackground.add(Conv2D(filters=constants.FILTERCOUNT, kernel_size=constants.BACKGROUNDKERNEL, strides=constants.STRIDES, padding=constants.PADDING, activation='relu', bias_initializer=RandomNormal(), input_shape=imgShape))
-# backgroundCompiled = modelBackground.compile(optimizer=Adam(lr=constants.learningrate), loss=categorical_crossentropy, metrics=['accuracy'])
-# backgroundPredictions = modelBackground.predict(backgroundData)
-# print(backgroundPredictions.shape)
+#Background/other model
+modelBackground = Sequential()
+modelBackground.add(Conv2D(filters=constants.FILTERCOUNT, kernel_size=constants.BACKGROUNDKERNEL, strides=constants.STRIDES, padding=constants.PADDING, activation='relu', bias_initializer=RandomNormal(), input_shape=imgShape))
+modelBackground.compile(optimizer=Adam(lr=constants.learningrate), loss=categorical_crossentropy, metrics=['accuracy'])
+# modelBackground.fit(trainingData, backgroundTrainingLabels, batch_size=constants.BACKGROUNDBATCHSIZE, epochs=constants.EPOCHCOUNT, verbose=1)
+prediction = modelBackground.predict(np.array(validationData))
+print(np.array(prediction))
+
+plt.imshow(prediction[33])
+plt.show()
 
 """
 Now we will combine the predictions in order to learn off these values

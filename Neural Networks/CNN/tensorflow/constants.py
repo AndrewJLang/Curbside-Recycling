@@ -2,13 +2,13 @@ import numpy as np
 from keras_preprocessing import image
 import os
 
-data_dir = "../../pymeanshift/pms_mixed_frames/"
+data_dir = "../../../pymeanshift/pms_mixed_frames/"
 
 #Extracts the images and places them in an array
 def processImgs():
     data = []
     for x in os.listdir(data_dir):
-        img = image.load_img(data_dir + x, target_size=(199,199))
+        img = image.load_img(data_dir + x, target_size=(200,200))
         img = image.img_to_array(img)
         img = img / 255
         data.append(img)
@@ -33,13 +33,6 @@ def labelIndividualData(objectType):
         else:
             labelArr.append(0)
     return np.array(labelArr)
-
-def getTensors(arr):
-    tensorArr = []
-    for x in range(len(arr)):
-        featureVector = np.reshape(arr[x], newshape=-1)
-        tensorArr.append(featureVector)
-    return np.array(tensorArr)
 
 def createLabels():
     labelArr = []
@@ -107,17 +100,23 @@ objectDict = {
     'other': 4
 }
 
-BALLBATCHSIZE = 1
+#This is done for the collective data set
+BATCHSIZE = 20
 
-EPOCHCOUNT = 10
+BALLBATCHSIZE = 1
+BACKGROUNDBATCHSIZE = 100
+
+
+
+EPOCHCOUNT = 2
 VERB=1
-FILTERCOUNT = 3
+FILTERCOUNT = 64
 STRIDES = (1,1)
 BALLKERNEL = (2,2)
 BOTTLEKERNEL = (2,2)
 CANKERNEL = (2,2)
 PAPERKERNEL = (2,2)
-BACKGROUNDKERNEL = (2,2)
-learningrate = 0.01
-PADDING='same'
+BACKGROUNDKERNEL = (5,5)
+learningrate = 0.001
+PADDING='SAME'
 class_count = 5 #ball, bottle, can, paper, background...can add cardboard later
