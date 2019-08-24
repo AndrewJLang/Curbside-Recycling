@@ -67,6 +67,8 @@ def windowSliding(audioClip1, audioClip2):
     else:
         _, welch1 = signal.welch(audioClip1, return_onesided=False)
         _, welch2 = signal.welch(audioClip2, return_onesided=False)
+        print(f"Shape welch1: {np.array(welch1).shape}")
+        print(f"Shape welch2: {np.array(welch2).shape}")
         resultWelch = 1 - spatial.distance.cosine(welch1, welch2)
         return resultWelch
     return similarityArr
@@ -119,16 +121,16 @@ def pcaAnalysis(arr1, arr2):
 test1 = np.array([1,4,6,8,9,5,2])
 test2 = np.array([3,6,1,4,6,0,7])
 
-pcaAnalysis(test1, test2)
+# pcaAnalysis(test1, test2)
 
 audioClips1 = extractAllFFT(audioFilesTennisBalls)
-audioClips2 = extractAllFFT(audioFilesTennisBalls)
+audioClips2 = extractAllFFT(audioFilesPlasticBottles)
 
 # combined = np.concatenate(np.array(audioClips1), np.array(audioClips2))
 # print(combined.shape)
 
-# cosineOutput = np.array(allVideoSliding(audioClips1, audioClips2)) #Use this when audioClips1 and audioClips2 are from different files
-
+cosineOutput = np.array(allVideoSliding(audioClips1, audioClips2)) #Use this when audioClips1 and audioClips2 are from different files
+print(cosineOutput)
 # cosineOutput = np.array(sameObject(audioClips1)) #Use this is audioClips1 and audioClips2 are extracting from the same file
 
 # print(f"Cosine output: {cosineOutput}")

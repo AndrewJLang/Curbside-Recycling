@@ -7,6 +7,8 @@ from glob import glob
 import warnings
 from scipy import stats
 
+#NOTE: In both LDA.py and PCA.py I am doing these analysis' directly on the FFT without the transformation into PSD, which is something I think should be looked at
+
 #Will suppress all warnings (not recommended)
 warnings.filterwarnings("ignore")
 
@@ -56,6 +58,11 @@ def extractSTFT(audioArr):
         STFTArr.append(stft[0])
     return STFTArr
 
+"""
+Extracting the FFT clips for the collective data set and find the minimum
+From there every FFT audio clipping (no matter the object) is concatenated down to the minimum value
+"""
+
 minLengthArr = []
 #arrays from the FFT transform
 bottleFFT = np.array(extractFFT(plasticBottles))
@@ -103,13 +110,14 @@ labelsSTFT, valuesSTFT = shuffle_arrays(np.array(labels), np.array(STFTArr))
 # print(f"shape: {np.array(extractSTFT(plasticBottles)).shape}")
 # print(f"STFT: {extractSTFT(plasticBottles)}")
 
+#This does LDA on the FFT audio clippings
 def LDA(frequencyArr, labels):
     splitMark = int(len(frequencyArr)*0.8)
     trainingData = frequencyArr[:splitMark]
     validationData = frequencyArr[splitMark:]
 
     lda = LinearDiscriminantAnalysis()
-    lda.fit(trainingData,labels[:splitMark])
+    lda.fit(trainingData,labels[:splitMark]) #NOTE: Check to see if this is being trained (how many epochs)
     
     validationLabels = labels[splitMark:]
     prediction = lda.predict(validationData)
@@ -143,25 +151,31 @@ def pcaAnalysis(frequencyArr):
     pca_data = pca.transform(frequencyArr)
     return pca_data
 
+"""
+The PCA's are extracted for each individual object, as well as for the group as a whole
+This is different than how it is doen in PCA.py, since here the PCA is taken on all audio clips
+The array is just shortened down to contain the PCA's associated with each label
+NOTE: may need adaptations to see the correlation between all the data and their labels for pca_transform
+"""
 
-# pca_transform = np.array(pcaAnalysis(FFTArr))
-# print(f"PCA transform shape: {pca_transform.shape}")
+pca_transform = np.array(pcaAnalysis(FFTArr))
+print(f"PCA transform shape: {pca_transform.shape}")
 
+print(f"Original FFT shape: {np.array(FFTArr).shape}")
 
-# print(f"Original FFT shape: {np.array(FFTArr).shape}")
+bottlePCA = pca_transform[:len(bottleFFT)]
+print(f"bottle pca shape: {bottlePCA.shape}")
 
-# bottlePCA = pca_transform[:len(bottleFFT)]
-# print(f"bottle pca shape: {bottlePCA.shape}")
+canPCA = pca_transform[len(bottleFFT):(len(canFFT)+len(bottleFFT))]
+print(f"can pca shape: {canPCA.shape}")
 
-# canPCA = pca_transform[len(bottleFFT):(len(canFFT)+len(bottleFFT))]
-# print(f"can pca shape: {canPCA.shape}")
+ballPCA = pca_transform[(len(bottleFFT)+len(canFFT)):]
+print(f"ball pca shape: {ballPCA.shape}")
 
-# ballPCA = pca_transform[(len(bottleFFT)+len(canFFT)):]
-# print(f"ball pca shape: {ballPCA.shape}")
-
-# # result = 1 - spatial.distance.cosine(ballPCA[4], ballPCA[2])
-# result = 1 - spatial.distance.correlation(canPCA[4], canPCA[1])
-# print(f"Result: {result}")
+result = 1 - spatial.distance.cosine(ballPCA[4], ballPCA[2])
+print(f"Result ball: {result}")
+result = 1 - spatial.distance.correlation(canPCA[4], canPCA[1])
+print(f"Result: {result}")
 
 # statAns = stats.pearsonr(ballPCA[4], canPCA[3])
 # print(f"correlation coeff: {statAns[0]}\tP-value: {statAns[1]}")
