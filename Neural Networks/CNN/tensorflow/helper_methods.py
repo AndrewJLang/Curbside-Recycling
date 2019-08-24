@@ -1,8 +1,13 @@
 import numpy as np
 import random
+import tensorflow as tf
+import sys
 
 #import python module
 import constants
+
+np.set_printoptions(threshold=sys.maxsize)
+
 
 def separateTraining(validationSplit=0.8):
     data = constants.processImgs()
@@ -34,8 +39,13 @@ def getBatchData(batchSize, trainingData, trainingLabels):
                 if trainingLabels[x][i] == 1:
                     labelArr.append(i)
 
-    print(labelArr[:batchSize])
-    return imgArr[:batchSize], labelArr[:batchSize]
+    # print(labelArr[:batchSize])
+    #Need to transform labels to have each row contain binary values for which object image contains
+    #NOTE: I need to not have the images separated when doing this if they have multiple labels
+    labelArr = tf.one_hot(labelArr, 5).eval()
+    # print(f"This is label array: {np.array(labelArr.eval())}")
+
+    return np.array(imgArr[:batchSize]), np.array(labelArr[:batchSize])
 
 #For the validation data, this will not be run in batches, so there is no need to specify batch size
 def getValidationData(validationData, validationLabels):

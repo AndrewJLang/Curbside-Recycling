@@ -28,6 +28,10 @@ def extractFFT(audioArr):
     # print(f"With Complex: {fourierComplex}")
     return fourierArr
 
+"""
+Need to extract the FFT's of all audio clips for each object and shorten them down to the min length
+"""
+
 #Extracting bottle FFT
 bottleFFT = np.array(extractFFT(plasticBottles))
 minElement = (min(map(len, bottleFFT)))
@@ -68,6 +72,10 @@ def pcaAnalysis(frequencyArr):
     f"{len(pca.explained_variance_ratio_)}")
     pca_data = pca.transform(frequencyArr)
     return pca_data
+
+"""
+This performs PCA between two of the same objects, not the collective group
+"""
 
 bottlePCA = np.array(pcaAnalysis(bottleFFT))
 print(bottlePCA.shape)

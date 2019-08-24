@@ -108,9 +108,9 @@ BACKGROUNDBATCHSIZE = 100
 
 
 
-EPOCHCOUNT = 2
+EPOCHCOUNT = 10
 VERB=1
-FILTERCOUNT = 64
+FILTERCOUNT = 3 #Don't know if this can be changed, because the the dimensionality of the images (width x height x depth, i.e. filter count?)
 STRIDES = (1,1)
 BALLKERNEL = (2,2)
 BOTTLEKERNEL = (2,2)
