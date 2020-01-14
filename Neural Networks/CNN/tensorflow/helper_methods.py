@@ -67,3 +67,14 @@ def getValidationData(validationData, validationLabels):
                     continue
 
     return imgArr, labelArr
+
+"""
+This will be the function called when optimizing the data
+Need the directories of all the images of the individual objects, as well as mixed group
+"""
+def getBatchInfo(batchSize, category='mixed'):
+    ball_dir 
+    
+
+
+    if category == 'mixed':

@@ -2,10 +2,13 @@ import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
 import os
+import sys
 import argparse
 
 import constants
 import helper_methods
+
+tensorBoardPath = '/TensorBoard_models/'
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
@@ -40,6 +43,7 @@ paperLabels = tf.placeholder('float',[None, 1])
 backgroundLabels = tf.placeholder('float',[None, 1])
 
 #Define the 1D array that will hold tensor for the image
+#NOTE: Need to change so that it can take constants.CNN_LAYER instead of image depth
 tensorShape = int(imgWidth * imgHeight * imgDepth)
 # print(tensorShape)
 
@@ -91,6 +95,7 @@ canOutput = tf.reshape(canActivation, shape=[-1, tensorShape])
 canPrediction = tf.matmul(ballOutput, weights['canOutputWeight']) + bias['canOutputBias']
 
 canLoss = tf.nn.sigmoid_cross_entropy_with_logits(logits=canPrediction, labels=canLabels)
+tf.summary.histogram('can loss', canLoss)
 canOptimizer = tf.train.AdamOptimizer(learning_rate=constants.learningrate).minimize(canLoss)
 correct_prediction3 = tf.cast(tf.equal(tf.round(tf.nn.sigmoid(canPrediction)), canLabels), tf.float32)
 canAccuracy = tf.reduce_mean(correct_prediction3)
@@ -144,29 +149,49 @@ finalOptimizer = tf.train.AdamOptimizer(learning_rate=constants.learningrate).mi
 correct_prediction6 = tf.cast(tf.equal(tf.argmax(tf.nn.sigmoid(finalPrediction),1), tf.argmax(collectiveLabels, 1)), tf.float32)
 groupAccuracy = tf.reduce_mean(correct_prediction6)
 
-#NOTE: I need to start saving models that perform well (highest accuracy)
 #Need to initialize the arrays of bias/weights to be used within the session
 init = tf.global_variables_initializer()
 
+#Create saver object to save models
+saver = tf.train.Saver()
 #Now for the learning/training of the model, as well as the validation
-with tf.Session() as sess:
-    sess.run(init)
 
-    trainingAcc = 0.0
-    """
-    Need to now split our data for training/validation
-    The data split can be used for individual training as well
-    """
-    trainingData, trainingLabels, validationData, validationLabels = helper_methods.separateTraining(validationSplit=0.8)
-    for epoch in range(constants.EPOCHCOUNT):
-        print(f"Epoch #{epoch}:")
-        batchData, batchLabels = helper_methods.getBatchData(constants.BATCHSIZE, trainingData, trainingLabels)
+if (sys.argv[1] == 'train'):
+    with tf.Session() as sess:
+        sess.run(init)
+        merged = tf.summary.merge_all()
 
-        #This is for the collective group (5 object optimization)
-        finalOptimizer.run(feed_dict={ballData: batchData, bottleData: batchData, canData: batchData, paperData: batchData, backgroundData: batchData, collectiveLabels: batchLabels})
+        trainingAcc = 0.0
+        modelPath = "model"
+        logdir = "log/traininglog.txt"
+        if not os.path.exists(modelPath):
+            os.makedirs(modelPath)
+        if not os.path.exists('log'):
+            os.makedirs('log')
+        
+        for epoch in range(constants.EPOCHCOUNT):
+            batchData, batchLabels = helper_methods.getBatchData(constants.BATCHSIZE, )
+            
+
+# with tf.Session() as sess:
+#     sess.run(init)
+
+#     trainingAcc = 0.0
+#     """
+#     Need to now split our data for training/validation
+#     The data split can be used for individual training as well
+#     """
+#     trainingData, trainingLabels, validationData, validationLabels = helper_methods.separateTraining(validationSplit=0.8)
+#     for epoch in range(constants.EPOCHCOUNT):
+#         print(f"Epoch #{epoch}:")
+#         batchData, batchLabels = helper_methods.getBatchData(constants.BATCHSIZE, trainingData, trainingLabels)
+
+#         #This is for the collective group (5 object optimization)
+#         finalOptimizer.run(feed_dict={ballData: batchData, bottleData: batchData, canData: batchData, paperData: batchData, backgroundData: batchData, collectiveLabels: batchLabels})
 
 
-    #Once it has been trained, it needs to be evaluated
-    #NOTE: Need to make sure data is unseen for this step
-    validationAccuracy = groupAccuracy.eval(feed_dict={ballData: validationData, bottleData: validationData, canData: validationData, paperData: validationData, backgroundData: validationData, collectiveLabels: validationLabels})
-    print(f"Validation accuracy: {validationAccuracy}")
+#     #Once it has been trained, it needs to be evaluated
+#     #NOTE: Need to make sure data is unseen for this step
+#     validationAccuracy = groupAccuracy.eval(feed_dict={ballData: validationData, bottleData: validationData, canData: validationData, paperData: validationData, backgroundData: validationData, collectiveLabels: validationLabels})
+#     print(f"Validation accuracy: {validationAccuracy}")
+

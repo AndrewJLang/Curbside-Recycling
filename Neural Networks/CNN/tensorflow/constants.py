@@ -101,13 +101,13 @@ objectDict = {
 }
 
 #This is done for the collective data set
-BATCHSIZE = 20
+BATCHSIZE = 300
 
 BALLBATCHSIZE = 1
 BACKGROUNDBATCHSIZE = 100
 
 
-
+CNN_LAYER = 64
 EPOCHCOUNT = 10
 VERB=1
 FILTERCOUNT = 3 #Don't know if this can be changed, because the the dimensionality of the images (width x height x depth, i.e. filter count?)
@@ -120,3 +120,11 @@ BACKGROUNDKERNEL = (5,5)
 learningrate = 0.001
 PADDING='SAME'
 class_count = 5 #ball, bottle, can, paper, background...can add cardboard later
+
+#Category directories to be accessed for training/validation
+#NOTE: Currently don't have proper image set so no data storage location yet
+ball_dir = "../../../"
+bottle_dir = "../../../"
+can_dir = "../../../"
+paper_dir = "../../../"
+background_dir = "../../../" #Can be removed later/switched for cardboard
