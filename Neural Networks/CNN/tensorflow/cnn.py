@@ -12,19 +12,12 @@ tensorBoardPath = '/TensorBoard_models/'
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
-ap = argparse.ArgumentParser()
-ap.add_argument('-ind', '--individual', required=False) #This is if the user wishes to train/validate on each CNN indivudally
-args = vars(ap.parse_args())
 
-#Import in the data set of images
-data = constants.processImgs()
+imgWidth, imgHeight, imgDepth = constants.IMGSIZE, constants.IMGSIZE, constants.IMGDEPTH
 
-#Get the shape of the images and define their width, height, depth (RGB)
-imgShape = data[0].shape
-
-imgWidth = imgShape[0]
-imgHeight = imgShape[1]
-imgDepth = imgShape[2]
+if len(sys.argv) < 2:
+    print("Too few arguments provided, program terminating")
+    sys.exit(0)
 
 #data
 collectiveData = tf.placeholder('float', [None, imgWidth, imgHeight, imgDepth])
@@ -35,7 +28,7 @@ paperData = tf.placeholder('float',[None, imgWidth, imgHeight, imgDepth])
 backgroundData = tf.placeholder('float',[None, imgWidth, imgHeight, imgDepth])
 
 #labels
-collectiveLabels = tf.placeholder('float', [None, constants.class_count])
+collectiveLabels = tf.placeholder('float', [None, constants.CLASSCOUNT])
 ballLabels = tf.placeholder('float',[None, 1])
 bottleLabels = tf.placeholder('float',[None, 1])
 canLabels = tf.placeholder('float',[None, 1])
@@ -151,11 +144,10 @@ groupAccuracy = tf.reduce_mean(correct_prediction6)
 
 #Need to initialize the arrays of bias/weights to be used within the session
 init = tf.global_variables_initializer()
-
 #Create saver object to save models
 saver = tf.train.Saver()
-#Now for the learning/training of the model, as well as the validation
 
+#Now for the learning/training of the model, as well as the validation
 if (sys.argv[1] == 'train'):
     with tf.Session() as sess:
         sess.run(init)
@@ -170,28 +162,17 @@ if (sys.argv[1] == 'train'):
             os.makedirs('log')
         
         for epoch in range(constants.EPOCHCOUNT):
-            batchData, batchLabels = helper_methods.getBatchData(constants.BATCHSIZE, )
+            batchData, batchLabels = helper_methods.getBatchData(constants.BATCHSIZE, 'ball')
+            ballOptimizer.run(feed_dict={ballData: batchData, ballLabels: batchLabels})
+
+            batchData, batchLabels = helper_methods.getBatchData(constants.BATCHSIZE, 'bottle')
+            bottleOptimizer.run(feed_dict={bottleData: batchData, bottleLabels: batchLabels})
+
+            batchData, batchLabels = helper_methods.getBatchData(constants.BATCHSIZE, 'can')
+            canOptimizer.run(feed_dict={canData: batchData, canLabels: batchLabels})
+
+            batchData, batchLabels = helper_methods.getBatchData(constants.BATCHSIZE, 'paper')
             
 
-# with tf.Session() as sess:
-#     sess.run(init)
-
-#     trainingAcc = 0.0
-#     """
-#     Need to now split our data for training/validation
-#     The data split can be used for individual training as well
-#     """
-#     trainingData, trainingLabels, validationData, validationLabels = helper_methods.separateTraining(validationSplit=0.8)
-#     for epoch in range(constants.EPOCHCOUNT):
-#         print(f"Epoch #{epoch}:")
-#         batchData, batchLabels = helper_methods.getBatchData(constants.BATCHSIZE, trainingData, trainingLabels)
-
-#         #This is for the collective group (5 object optimization)
-#         finalOptimizer.run(feed_dict={ballData: batchData, bottleData: batchData, canData: batchData, paperData: batchData, backgroundData: batchData, collectiveLabels: batchLabels})
-
-
-#     #Once it has been trained, it needs to be evaluated
-#     #NOTE: Need to make sure data is unseen for this step
-#     validationAccuracy = groupAccuracy.eval(feed_dict={ballData: validationData, bottleData: validationData, canData: validationData, paperData: validationData, backgroundData: validationData, collectiveLabels: validationLabels})
-#     print(f"Validation accuracy: {validationAccuracy}")
-
+            batchData, batchLabels = helper_methods.getBatchData(constants.BATCHSIZE, 'background')
+            

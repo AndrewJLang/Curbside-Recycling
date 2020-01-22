@@ -119,7 +119,12 @@ PAPERKERNEL = (2,2)
 BACKGROUNDKERNEL = (5,5)
 learningrate = 0.001
 PADDING='SAME'
-class_count = 5 #ball, bottle, can, paper, background...can add cardboard later
+
+CLASSCOUNT = 5 #ball, bottle, can, paper, background...can add cardboard later
+IMGSIZE = 28
+IMGDEPTH = 3
+FULLSIZE = 500
+
 
 #Category directories to be accessed for training/validation
 #NOTE: Currently don't have proper image set so no data storage location yet
@@ -128,3 +133,10 @@ bottle_dir = "../../../"
 can_dir = "../../../"
 paper_dir = "../../../"
 background_dir = "../../../" #Can be removed later/switched for cardboard
+
+#ONEHOT encode image labels
+ball_ONEHOT = [1,0,0,0,0]
+bottle_ONEHOT = [0,1,0,0,0]
+can_ONEHOT = [0,0,1,0,0]
+paper_ONEHOT = [0,0,0,1,0]
+background_ONEHOT = [0,0,0,0,1]
