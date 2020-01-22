@@ -162,17 +162,53 @@ if (sys.argv[1] == 'train'):
             os.makedirs('log')
         
         for epoch in range(constants.EPOCHCOUNT):
-            batchData, batchLabels = helper_methods.getBatchData(constants.BATCHSIZE, 'ball')
+            batchData, batchLabels = helper_methods.getBatchInfo(constants.BATCHSIZE, 'ball')
             ballOptimizer.run(feed_dict={ballData: batchData, ballLabels: batchLabels})
 
-            batchData, batchLabels = helper_methods.getBatchData(constants.BATCHSIZE, 'bottle')
+            batchData, batchLabels = helper_methods.getBatchInfo(constants.BATCHSIZE, 'bottle')
             bottleOptimizer.run(feed_dict={bottleData: batchData, bottleLabels: batchLabels})
 
-            batchData, batchLabels = helper_methods.getBatchData(constants.BATCHSIZE, 'can')
+            batchData, batchLabels = helper_methods.getBatchInfo(constants.BATCHSIZE, 'can')
             canOptimizer.run(feed_dict={canData: batchData, canLabels: batchLabels})
 
-            batchData, batchLabels = helper_methods.getBatchData(constants.BATCHSIZE, 'paper')
-            
+            batchData, batchLabels = helper_methods.getBatchInfo(constants.BATCHSIZE, 'paper')
+            paperOptimizer.run(feed_dict={paperData: batchData, paperLabels: batchLabels})
 
-            batchData, batchLabels = helper_methods.getBatchData(constants.BATCHSIZE, 'background')
+            batchData, batchLabels = helper_methods.getBatchInfo(constants.BATCHSIZE, 'background')
+            backgroundOptimizer.run(feed_dict={backgroundData: batchData, backgroundLabels: batchLabels})
+
+            batchData, batchLabels = helper_methods.getBatchInfo(constants.BATCHSIZE)
+            finalOptimizer.run({ballData: batchData, bottleData: batchData, canData: batchData, paperData: batchData, backgroundData: batchData, collectiveLabels: batchLabels})
+
+
+            if epoch % 1 == 0:
+                evalData, evalLabels = helper_methods.getBatchInfo(constants.BATCHSIZE, 'ball')
+                ballAcc = ballAccuracy.eval({ballData: evalData, ballLabels: evalLabels})
+
+                evalData, evalLabels = helper_methods.getBatchInfo(constants.BATCHSIZE, 'bottle')
+                bottleAcc = bottleAccuracy.eval({bottleData: evalData, bottleLabels: evalLabels})
+
+                evalData, evalLabels = helper_methods.getBatchInfo(constants.BATCHSIZE, 'can')
+                canAcc = canAccuracy.eval({canData: evalData, canLabels: evalLabels})
+                
+                evalData, evalLabels = helper_methods.getBatchInfo(constants.BATCHSIZE, 'paper')
+                paperAcc = paperAccuracy.eval({paperData: evalData, paperLabels: evalLabels})
+
+                evalData, evalLabels = helper_methods.getBatchInfo(constants.BATCHSIZE, 'background')
+                backgroundAcc = backgroundAccuracy.eval({backgroundData: evalData, backgroundLabels: evalLabels})
+
+                evalData, evalLabels = helper_methods.getBatchInfo(constants.BATCHSIZE)
+                totalAcc = groupAccuracy.eval({ballData: evalData, bottleData: evalData, canData: evalData, paperData: evalData, backgroundData: evalData, collectiveLabels: evalLabels})
+
+                if totalAcc >= trainingAcc:
+                    trainingAcc = totalAcc
+                    savePath = saver.save(sess, 'model/cnn_model.ckpt')
+                    print("Highest accuracy model found, model saved")
+
+                print("epoch: %d\tball: %.4f\tbottle: %.4f\tcan: %.4f\tpaper: %.4f\tbackground: %.4f" % (epoch, ballAcc, bottleAcc, canAcc, paperAcc, backgroundAcc))
+                print("total accuracy: %.4f" % (totalAcc))
+
+                with open(logdir, 'a') as results:
+                    results.write("epoch: %d\tball: %.4f\tbottle: %.4f\tcan: %.4f\tpaper: %.4f\tbackground: %.4f\ntotal accuracy: %.4f" % (epoch, ballAcc, bottleAcc, canAcc, paperAcc, backgroundAcc, totalAcc))
+    
             
