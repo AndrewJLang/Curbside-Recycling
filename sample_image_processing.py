@@ -13,23 +13,26 @@ def createFolder(folderName):
 
 
 #converts the videos into frames and places them inside the associated created folder
-def convertVideos(fileLocation, folderName):
+def convertVideos(fileLocation):
     count = 1
-    for x in os.listdir("./" + fileLocation + "/"):
-        print(x)
-        createFolder("./blue_background_sample_images/mixed_video_frames/video_" + str(count) + "_frames")
-        os.system("ffmpeg -i blue_background_sample_images/new_mixed_videos/" + x + " -r 4 blue_background_sample_images/mixed_video_frames/video_" + str(count) + "_frames/image%05d.jpg -hide_banner")
+    for x in os.listdir(fileLocation):
+        file_name = os.path.splitext(x)[0]
+        output_path = "/home/langa21/new_extracted_videos/video" + "_" + file_name + "_#" + str(count) + "_frames"
+        createFolder(output_path)
+        os.system("ffmpeg -i /home/langa21/new_extracted_videos/MockDropsDataDLSR_20200913/" + x + " -r 10 " + output_path + "/image%05d.jpg -hide_banner")
         count += 1
+
+
 
 def convertAudio(fileLocation, folderName):
     count = 0
 #     createFolder("./sample_images/" + folderName + "/audio_clips")
     createFolder("./blue_background_sample_images/regular_speed/" + folderName + "/audio_clips")
     for x in os.listdir("./" + fileLocation + "/"):
-        # os.system("ffmpeg -i sample_images/" + folderName + "/" + x + " -f mp3 -vn sample_images/" + folderName + "/audio_clips/audio_clip_" + str(count) + ".mp3 -hide_banner")
+
         os.system("ffmpeg -i blue_background_sample_images/regular_speed/" + folderName + "/" + x + " -f mp3 -vn blue_background_sample_images/regular_speed/" + folderName + "/audio_clips/regular_clip_" + str(count) + ".mp3 -hide_banner")
         count += 1
 
 # Need to be changed accordingly to proper directory
-convertVideos("blue_background_sample_images/new_mixed_videos", "plastic_bottles")
+convertVideos("/home/langa21/new_extracted_videos/MockDropsDataDLSR_20200913/")
 # convertAudio("./blue_background_sample_images/regular_speed/tennis_balls", "tennis_balls")
