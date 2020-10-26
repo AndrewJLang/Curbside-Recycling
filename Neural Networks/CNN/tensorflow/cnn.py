@@ -159,7 +159,7 @@ with tf.Session() as sess:
     """
     trainingData, trainingLabels, validationData, validationLabels = helper_methods.separateTraining(validationSplit=0.8)
     for epoch in range(constants.EPOCHCOUNT):
-        print(f"Epoch #{epoch}:")
+        # print(f"Epoch #{epoch}:")
         batchData, batchLabels = helper_methods.getBatchData(constants.BATCHSIZE, trainingData, trainingLabels)
 
         #This is for the collective group (5 object optimization)
@@ -169,4 +169,4 @@ with tf.Session() as sess:
     #Once it has been trained, it needs to be evaluated
     #NOTE: Need to make sure data is unseen for this step
     validationAccuracy = groupAccuracy.eval(feed_dict={ballData: validationData, bottleData: validationData, canData: validationData, paperData: validationData, backgroundData: validationData, collectiveLabels: validationLabels})
-    print(f"Validation accuracy: {validationAccuracy}")
+    # print(f"Validation accuracy: {validationAccuracy}")
