@@ -21,35 +21,24 @@ import os
 
 #Andrew's changes to filter through all images
 
-def pmsTransformation(objectType):
+def pmsTransformation():
     #file path(s) to different objects
-    filePath = "../blue_background_sample_images/regular_speed_frames/"
-    writePath = "pms_images/" + objectType
+    filePath = "../../separated_Cenek_images/"
 
-    try:
-    # Creating a folder named data
-        if not os.path.exists(writePath):
-            os.makedirs(writePath)
-        else:
-            print('folder already exists with files')
-            return
-    # If not created, then raise error
-    except OSError:
-        print (OSError)
-        return
-
-    for x in os.listdir(filePath + objectType + "/"):
-        for i in os.listdir(filePath + objectType + "/" + x):
-            path = filePath + objectType + "/" + x + "/" + i
-            print(path)
-            original_image = cv2.imread(path)
-            (segmented_image, labels_image, number_regions) = pms.segment(original_image, spatial_radius=10, range_radius=10, min_density=300)
-            status = cv2.imwrite(writePath + "/video_" + x + "_frame_" + i + ".jpg", segmented_image)
+    #Traverse all the folders that have the name of the images
+    for x in os.listdir(filePath):
+        #Traverse all the folders of each video
+        for i in os.listdir(filePath + x):
+            #Traverse the images in each of the folder
+            for n in os.listdir(filePath + x + "/" + i):
+                path = filePath + x +"/" + i + "/" + n
+                writePath = "pms_images/" + x + "_" + n
+                original_image = cv2.imread(path)
+                (segmented_image, labels_image, number_regions) = pms.segment(original_image, spatial_radius=10, range_radius=10, min_density=300)
+                status = cv2.imwrite(writePath, segmented_image)
 
 
-# pmsTransformation("tennis_balls")
-# pmsTransformation("plastic_bottles")
-# pmsTransformation("soda_cans")
+pmsTransformation()
 
 
 #NOTE: David commented out code below, should be doing same thing as code above using pms
