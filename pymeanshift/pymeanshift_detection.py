@@ -38,29 +38,20 @@ def pmsTransformation():
                 status = cv2.imwrite(writePath, segmented_image)
 
 
-pmsTransformation()
+#pmsTransformation()
 
 
-#NOTE: David commented out code below, should be doing same thing as code above using pms
+def testPMS():
+    image = "test_images/image00005.jpg"
+    image_obj = cv2.imread(image)
+    (segmented_image, labels_image, number_regions) = pms.segment(image_obj, spatial_radius=10, range_radius=10, min_density=300)
+    status = cv2.imwrite("test_images/test.jpg", segmented_image)
+    print(type(labels_image))
+    print("Labelled array shape: %s", labels_image.shape)
+    print("Number of regions:\t" + str(number_regions))
+    print("label image:\t" + str(labels_image))
 
-# original_image = cv2.imread("data/frame48")
-# (segmented_image, labels_image, number_regions) = pms.segment(original_image, spatial_radius=6, range_radius=4.5, min_density=50)
-# status = cv2.imwrite("updated48.png", segmented_image)
-# print("Image written to file-system : ", status)
-
-
-# counter = 0
-# for filename in os.listdir("data/"):
-    # print(filename)
-    # original_image = cv2.imread("data/" + filename)
-    # (segmented_image, labels_image, number_regions) = pms.segment(original_image, spatial_radius=6, range_radius=4.5, min_density=50)
-    # status = cv2.imwrite("./updated_data/updated_frame" + str(counter) + ".jpg", segmented_image)
-    # print("Image written to file-system: :", status)
-
+testPMS()
 
 cv2.destroyAllWindows()
 
-# original_image = cv2.imread("example.png")
-# (segmented_image, labels_image, number_regions) = pms.segment(original_image, spatial_radius=6, range_radius=4.5, min_density=50)
-# status = cv2.imwrite("updated_ex.png", segmented_image)
-# print("Image written to file-system : ", status)
