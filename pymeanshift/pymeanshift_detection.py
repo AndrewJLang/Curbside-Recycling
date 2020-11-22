@@ -42,9 +42,9 @@ def pmsTransformation():
 
 
 def testPMS():
-    image = "test_images/image00005.jpg"
+    image = "pms_images/shells/image00021.jpg"
     image_obj = cv2.imread(image)
-    (segmented_image, labels_image, number_regions) = pms.segment(image_obj, spatial_radius=10, range_radius=10, min_density=300)
+    (segmented_image, labels_image, number_regions) = pms.segment(image_obj, spatial_radius=15, range_radius=15, min_density=200)
     status = cv2.imwrite("test_images/test.jpg", segmented_image)
     print(type(labels_image))
     print("Labelled array shape: %s", labels_image.shape)

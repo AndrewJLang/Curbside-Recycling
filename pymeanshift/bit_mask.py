@@ -20,29 +20,34 @@ def getBitArray(category, imageName):
     assert arr.shape[0] == bitImage.size[1]
     assert arr.shape[1] == bitImage.size[0]
     pixelSums = [0, 765]
-    countBlack, countWhite = 0,0
+    countObject = 0
 
     for x in range(bitImage.size[1]):
         for y in range(bitImage.size[0]):
             rgbVal = int(sum(list(pixels[y,x])))
             bitVal = pixelSums[min(range(len(pixelSums)), key = lambda i: abs(pixelSums[i] - rgbVal))]
             if bitVal == 0:
+                countObject += 1
                 arr[x][y] = 1
             else:
                 arr[x][y] = 0
 
-    return arr
+    return arr, countObject
 
 
 #Working properly
 def loadCSV(folderName, pmsParameters, categoryName, fileName):
     pmsArr = []
+    uniqueList = []
     dataFile = open(folderName + "/" + pmsParameters + "/" + categoryName + "/" + fileName, 'r')
     reader = csv.reader(dataFile, delimiter=",")
     for row in reader:
         intRow = [int(i) for i in row]
+        for x in intRow:
+            if x not in uniqueList:
+                uniqueList.append(x)
         pmsArr.append(intRow)
-    
+
     return np.array(pmsArr)
 
 #loadCSV("pms_csv", "sr10rr10md100", "cardboard","image00018.csv")
@@ -52,40 +57,85 @@ def bitWiseCompare(baseImage, pmsImage):
     assert len(baseImage[0]) == len(pmsImage[0])
 
     similarityDict = {}
+    misClassifiedDict = {}
 
     for x in range(len(baseImage)):
         for i in range(len(baseImage[0])):
             if baseImage[x][i] == 0:
-                continue
+                if pmsImage[x][i] in misClassifiedDict:
+                    misClassifiedDict[pmsImage[x][i]] += 1
+                else:
+                    misClassifiedDict[pmsImage[x][i]] = 1
             else:
                 if pmsImage[x][i] in similarityDict:
                     similarityDict[pmsImage[x][i]] += 1
                 else:
                     similarityDict[pmsImage[x][i]] = 1
     
-    return similarityDict
+    return similarityDict, misClassifiedDict
 
-
+def calcDictAccuracy(dictObject):
+    totalAcc, objectCount = 0, 0
+    for key in dictObject:
+        objectCount += 1
+        totalAcc += dictObject[key]
+    
+    return float(totalAcc / objectCount)
 
 def iterateFolders(folderName):
     #Store the given similarities in a dictionary
-    totalParamScore = []
+    totalParamScore, totalMisClassifiedParamScore = {}, {}
 
     #All the tested PMS parameters
     for pmsParamFolder in os.listdir(folderName):
-        pmsParamScore = []
+        categoryObjectScore, misClassifiedCategoryObjectScore = {}, {}
         #Iterate through the different categories in the given PMS parameter folder
         currPath = os.path.join(folderName, pmsParamFolder)
         for categoryFolder in os.listdir(currPath):
             filePath = os.path.join(currPath, categoryFolder)
-            categoryScore = []
+            
+            categoryScore, misClassifiedCategoryScore = [], []
+
             #Iterate through the images in the given folder
             for csvFile in os.listdir(filePath):
-                baseImageArr = getBitArray(str(categoryFolder), csvFile[:-4] + ".jpg")
+                pixelMisclassificationPercentage, blobPixelAccuracy = 0.0, 0.0
+
+                # print("pmsParams: " + pmsParamFolder + "\tcategory: " + categoryFolder + "\tcsvFile: " + csvFile)
+                baseImageArr, blobPixelCount = getBitArray(str(categoryFolder), csvFile[:-4] + ".jpg")
                 pmsImageArr = loadCSV(folderName, pmsParamFolder, categoryFolder, csvFile)
                 
-                print(bitWiseCompare(baseImageArr, pmsImageArr))
+                classifiedDict, misClassifiedDict = bitWiseCompare(baseImageArr, pmsImageArr)
+                mainClassification = max(classifiedDict, key=classifiedDict.get)
+                
+                #Get accuracy at which it was able to classify just the blob
+                blobPixelAccuracy = float(float(classifiedDict[mainClassification]) / float(blobPixelCount))
+                # print("blob accuracy score: " + str(blobPixelAccuracy))
 
+                #Get proportion of image that was classified as the 'main blob'
+                if mainClassification in misClassifiedDict:
+                    pixelMisclassificationPercentage = float(float(misClassifiedDict[mainClassification]) / float(misClassifiedDict[mainClassification] + classifiedDict[mainClassification]))
+                else:
+                    pixelMisclassificationPercentage = 0.0
+                # print("misclassification percentage score: " + str(pixelMisclassificationPercentage))
+                
+                #Add correctly classified pixels score inside blob
+                categoryScore.append(blobPixelAccuracy)
+
+                #Add correctly classified pixels outside of blob
+                misClassifiedCategoryScore.append(pixelMisclassificationPercentage)
+
+            
+            #Dictionary for the average clasification score per category
+            categoryObjectScore[categoryFolder] = float(sum(categoryScore) / len(categoryScore))
+            
+            misClassifiedCategoryObjectScore[categoryFolder] = float(sum(misClassifiedCategoryScore) / len(misClassifiedCategoryScore))
+
+        #Get the overall accuracy for the given PMS parameters
+        totalParamScore[pmsParamFolder] = calcDictAccuracy(categoryObjectScore)
+        print("Param accuracy: " + str(totalParamScore[pmsParamFolder]))
+
+        totalMisClassifiedParamScore[pmsParamFolder] = calcDictAccuracy(misClassifiedCategoryObjectScore)
+        print("Param misclassified percentage: " + str(totalMisClassifiedParamScore[pmsParamFolder]))
 
 
 iterateFolders("pms_csv")
