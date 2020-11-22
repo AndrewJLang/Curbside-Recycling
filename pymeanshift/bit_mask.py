@@ -3,6 +3,7 @@ import os
 import numpy as np
 import sys
 import csv
+import datetime
 
 np.set_printoptions(threshold=sys.maxsize)
 
@@ -82,7 +83,25 @@ def calcDictAccuracy(dictObject):
     
     return float(totalAcc / objectCount)
 
-def iterateFolders(folderName):
+def writeOutput(fileName, PMSParam, classificationScore):
+    fileObj = open(fileName, 'a')
+    fileObj.write(str(PMSParam) + ": \t\t" + classificationScore + "\n")
+
+def iterateFolders(folderName, blobOutputFile, nonblobOutputFile):
+    currTime = str(datetime.datetime.now())
+    os.mkdir("bit_mask_scores/" + currTime, 0o777)
+    currPath = "bit_mask_scores/" + currTime + "/"
+    blobOutputFile = currPath + blobOutputFile + ".txt"
+    nonblobOutputFile = currPath + nonblobOutputFile + ".txt"
+    
+    fileObj = open(blobOutputFile, 'a')
+    fileObj.write("PMS parameters\t\tScore\n")
+    fileObj.close()
+
+    fileObj = open(nonblobOutputFile, 'a')
+    fileObj.write("PMS parameters\t\tScore\n")
+    fileObj.close()
+
     #Store the given similarities in a dictionary
     totalParamScore, totalMisClassifiedParamScore = {}, {}
 
@@ -137,8 +156,14 @@ def iterateFolders(folderName):
         totalMisClassifiedParamScore[pmsParamFolder] = calcDictAccuracy(misClassifiedCategoryObjectScore)
         print("Param misclassified percentage: " + str(totalMisClassifiedParamScore[pmsParamFolder]))
 
+        writeOutput(blobOutputFile, pmsParamFolder, str(totalParamScore[pmsParamFolder]))
+        writeOutput(nonblobOutputFile, pmsParamFolder, str(totalMisClassifiedParamScore[pmsParamFolder]))
 
-iterateFolders("pms_csv")
+    bestBlobMetric = max(totalParamScore, key=totalParamScore.get)
+    bestNonBlobMetric = min(totalMisClassifiedParamScore, key=totalMisClassifiedParamScore.get)
+    
+    writeOutput(blobOutputFile, "Best Metric: " + bestBlobMetric, "Score: " + totalParamScore[bestBlobMetric])
+    writeOutput(nonblobOutputFile, "Best Metric: " + bestNonBlobMetric, "Score: " + totalMisClassifiedParamScore[bestNonBlobMetric])
 
-
+iterateFolders("pms_csv", "pms_blob_classification", "pms_non_blob_classification")
 
