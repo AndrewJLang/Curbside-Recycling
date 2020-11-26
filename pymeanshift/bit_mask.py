@@ -33,7 +33,7 @@ def getBitArray(category, imageName):
             else:
                 arr[x][y] = 0
 
-    return arr, countObject
+    return arr, countObject, arr.shape[0]*arr.shape[1]
 
 
 #Working properly
@@ -87,18 +87,33 @@ def writeOutput(fileName, PMSParam, classificationScore):
     fileObj = open(fileName, 'a')
     fileObj.write(str(PMSParam) + ": \t\t" + classificationScore + "\n")
 
-def iterateFolders(folderName, blobOutputFile, nonblobOutputFile):
+"""
+This is run on every labeling within image in order to find the best one
+We do not care what the labeling is, just that the true positive is maximized while false positive is minimized
+This is normalized
+"""
+def calcCombinedAccuracy(classifiedDict, misClassifiedDict, blobPixelCount, nonBlobPixelCount):
+    topScore, topTruePositive, topFalsePositive = 0.0, 0.0, 0.0
+    for key in classifiedDict:
+        truePositivePercent = float(classifiedDict[key] / blobPixelCount)
+        falsePositivePercent = 0
+        if key in misClassifiedDict:
+            falsePositivePercent = float(misClassifiedDict[key] / nonBlobPixelCount)
+        score = truePositivePercent - falsePositivePercent
+        if score > topScore:
+            topScore = score
+            topTruePositive = truePositivePercent
+            topFalsePositive = falsePositivePercent
+    
+    return topScore, topTruePositive, topFalsePositive
+
+def iterateFolders(folderName, blobOutputFile):
     currTime = str(datetime.datetime.now())
     os.mkdir("bit_mask_scores/" + currTime, 0o777)
     currPath = "bit_mask_scores/" + currTime + "/"
     blobOutputFile = currPath + blobOutputFile + ".txt"
-    nonblobOutputFile = currPath + nonblobOutputFile + ".txt"
     
     fileObj = open(blobOutputFile, 'a')
-    fileObj.write("PMS parameters\t\tScore\n")
-    fileObj.close()
-
-    fileObj = open(nonblobOutputFile, 'a')
     fileObj.write("PMS parameters\t\tScore\n")
     fileObj.close()
 
@@ -120,52 +135,30 @@ def iterateFolders(folderName, blobOutputFile, nonblobOutputFile):
                 pixelMisclassificationPercentage, blobPixelAccuracy = 0.0, 0.0
 
                 # print("pmsParams: " + pmsParamFolder + "\tcategory: " + categoryFolder + "\tcsvFile: " + csvFile)
-                baseImageArr, blobPixelCount = getBitArray(str(categoryFolder), csvFile[:-4] + ".jpg")
+                baseImageArr, blobPixelCount, totalImagePixels = getBitArray(str(categoryFolder), csvFile[:-4] + ".jpg")
                 pmsImageArr = loadCSV(folderName, pmsParamFolder, categoryFolder, csvFile)
                 
                 classifiedDict, misClassifiedDict = bitWiseCompare(baseImageArr, pmsImageArr)
-                mainClassification = max(classifiedDict, key=classifiedDict.get)
+                nonBlobPixelCount = totalImagePixels - blobPixelCount
 
-                #We want to calculate the correctly classified divided by misclassified to get the most accuracte labelling
+                #Get the true positive and false positive for easy use to look at later on
+                bestBlobScore, truePositive, falsePositive = calcCombinedAccuracy(classifiedDict, misClassifiedDict, blobPixelCount, nonBlobPixelCount)
 
-                #Get accuracy at which it was able to classify just the blob
-                blobPixelAccuracy = float(float(classifiedDict[mainClassification]) / float(blobPixelCount))
-                # print("blob accuracy score: " + str(blobPixelAccuracy))
+                #classification score array for the category
+                categoryScore.append(bestBlobScore)
 
-                #Get proportion of image that was classified as the 'main blob'
-                if mainClassification in misClassifiedDict:
-                    pixelMisclassificationPercentage = float(float(misClassifiedDict[mainClassification]) /  )
-                else:
-                    pixelMisclassificationPercentage = 0.0
-                # print("misclassification percentage score: " + str(pixelMisclassificationPercentage))
-                
-                #Add correctly classified pixels score inside blob
-                categoryScore.append(blobPixelAccuracy)
-
-                #Add correctly classified pixels outside of blob
-                misClassifiedCategoryScore.append(pixelMisclassificationPercentage)
-
-            
             #Dictionary for the average clasification score per category
             categoryObjectScore[categoryFolder] = float(sum(categoryScore) / len(categoryScore))
-            
-            misClassifiedCategoryObjectScore[categoryFolder] = float(sum(misClassifiedCategoryScore) / len(misClassifiedCategoryScore))
 
         #Get the overall accuracy for the given PMS parameters
         totalParamScore[pmsParamFolder] = calcDictAccuracy(categoryObjectScore)
-        print("Param accuracy: " + str(totalParamScore[pmsParamFolder]))
-
-        totalMisClassifiedParamScore[pmsParamFolder] = calcDictAccuracy(misClassifiedCategoryObjectScore)
-        print("Param misclassified percentage: " + str(totalMisClassifiedParamScore[pmsParamFolder]))
+        # print(totalParamScore[pmsParamFolder])
 
         writeOutput(blobOutputFile, pmsParamFolder, str(totalParamScore[pmsParamFolder]))
-        writeOutput(nonblobOutputFile, pmsParamFolder, str(totalMisClassifiedParamScore[pmsParamFolder]))
 
     bestBlobMetric = max(totalParamScore, key=totalParamScore.get)
-    bestNonBlobMetric = min(totalMisClassifiedParamScore, key=totalMisClassifiedParamScore.get)
     
     writeOutput(blobOutputFile, "Best Metric: " + str(bestBlobMetric), "Score: " + str(totalParamScore[bestBlobMetric]))
-    writeOutput(nonblobOutputFile, "Best Metric: " + str(bestNonBlobMetric), "Score: " + str(totalMisClassifiedParamScore[bestNonBlobMetric]))
 
-iterateFolders("pms_csv", "pms_blob_classification", "pms_non_blob_classification")
+iterateFolders("pms_csv", "pms_blob_classification_score")
 
