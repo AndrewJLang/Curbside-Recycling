@@ -6,4 +6,4 @@
 **/blue_background_sample_images
 /Neural Networks/CNN/__pycache__
 /Neural Networks/CNN/tensorflow/__pycache__
-**/pymeanshift/bit_mask_scores/
+/pymeanshift/bit_mask_scores*/*
