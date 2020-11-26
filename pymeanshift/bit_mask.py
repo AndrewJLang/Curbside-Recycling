@@ -125,14 +125,16 @@ def iterateFolders(folderName, blobOutputFile, nonblobOutputFile):
                 
                 classifiedDict, misClassifiedDict = bitWiseCompare(baseImageArr, pmsImageArr)
                 mainClassification = max(classifiedDict, key=classifiedDict.get)
-                
+
+                #We want to calculate the correctly classified divided by misclassified to get the most accuracte labelling
+
                 #Get accuracy at which it was able to classify just the blob
                 blobPixelAccuracy = float(float(classifiedDict[mainClassification]) / float(blobPixelCount))
                 # print("blob accuracy score: " + str(blobPixelAccuracy))
 
                 #Get proportion of image that was classified as the 'main blob'
                 if mainClassification in misClassifiedDict:
-                    pixelMisclassificationPercentage = float(float(misClassifiedDict[mainClassification]) / float(misClassifiedDict[mainClassification] + classifiedDict[mainClassification]))
+                    pixelMisclassificationPercentage = float(float(misClassifiedDict[mainClassification]) /  )
                 else:
                     pixelMisclassificationPercentage = 0.0
                 # print("misclassification percentage score: " + str(pixelMisclassificationPercentage))
@@ -162,8 +164,8 @@ def iterateFolders(folderName, blobOutputFile, nonblobOutputFile):
     bestBlobMetric = max(totalParamScore, key=totalParamScore.get)
     bestNonBlobMetric = min(totalMisClassifiedParamScore, key=totalMisClassifiedParamScore.get)
     
-    writeOutput(blobOutputFile, "Best Metric: " + bestBlobMetric, "Score: " + totalParamScore[bestBlobMetric])
-    writeOutput(nonblobOutputFile, "Best Metric: " + bestNonBlobMetric, "Score: " + totalMisClassifiedParamScore[bestNonBlobMetric])
+    writeOutput(blobOutputFile, "Best Metric: " + str(bestBlobMetric), "Score: " + str(totalParamScore[bestBlobMetric]))
+    writeOutput(nonblobOutputFile, "Best Metric: " + str(bestNonBlobMetric), "Score: " + str(totalMisClassifiedParamScore[bestNonBlobMetric]))
 
 iterateFolders("pms_csv", "pms_blob_classification", "pms_non_blob_classification")
 
